@@ -4,5 +4,8 @@
 .idea/
 .vscode/
 
+# Configuration files
+config/*.json
+
 # Project stuff
 tmp_*
