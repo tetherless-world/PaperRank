@@ -6,7 +6,7 @@ ENCRYPTED_CONFIG_FILES= $(wildcard config/*.cast5)
 
 # Private task for echoing instructions
 _pwd_prompt:
-	@echo "Contact ZocialGPA for the password."
+	@echo "Contact Rukmal Weerawarana for decryption password."
 
 # to decrypt config vars
 decrypt_conf: _pwd_prompt
