@@ -13,7 +13,8 @@ class TestDBConnector(unittest.TestCase):
         """
         PaperRank.util.configSetup()
         config = PaperRank.util.config
-        test_db = PaperRank.util.dbconnector.Redis()
-        response = test_db.connect(host=config.redis['host'],
-                                   port=config.redis['port'], db=0)
+        test_db = PaperRank.util.dbconnector.Redis(host=config.redis['host'],
+                                                   port=config.redis['port'], 
+                                                   db=0)
+        response = test_db.checkConnection()
         self.assertTrue(response)

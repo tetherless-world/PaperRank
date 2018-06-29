@@ -13,17 +13,29 @@ class DatabaseConnector(ABC):
     """
 
     @abstractmethod
-    def connect(self, *args) -> bool:
-        """Abstract class method for `connect` function skeleton, which should
+    def __init__(self, *args):
+        """Abstract class method for `__init__` function skeleton, which should
         be used to implement the database connection function. Arguments to
         this function are not defined, as they will be idiosyncratic to the
         specific database used.
         
         Raises:
             NotImplementedError -- Raised when not implemented.
+        """
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def checkConnection(self) -> bool:
+        """Abstract class method for `checkConnection` function skeleton, which
+        should be used to implement a check connection function, to test that
+        the database connection is workign correctly
+        
+        Raises:
+            NotImplementedError -- Raised when not implemented
         
         Returns:
-            bool -- True if successful, false otherwise.
+            bool -- True if connection is successful.
         """
 
         raise NotImplementedError
@@ -88,10 +100,8 @@ class DatabaseConnector(ABC):
 
 
 class Redis(DatabaseConnector):
-    def __init__(self):
-        pass
 
-    def connect(self, host: str, port: int, db: int) -> bool:
+    def __init__(self, host: str, port: int, db: int):
         """Connect to the Redis database.
         
         Arguments:
@@ -100,16 +110,25 @@ class Redis(DatabaseConnector):
             db {int} -- Database number to connect to.
         
         Raises:
-            RuntimeError -- Raised when the database connection fails.
-
-        Returns:
-            bool -- True if connection is successful.
+            RuntimeError -- Raised if the database connection failed.
         """
 
         # Connect to Redis
         self.r = redis.StrictRedis(host=host, port=port, db=db)
+        self.checkConnection()
+
+    def checkConnection(self) -> bool:
+        """Check the Redis database connection.
+        
+        Raises:
+            RuntimeError -- Raised if the database connection failed.
+        
+        Returns:
+            bool -- True if connection is successful.
+        """
+
+        # Attempt ping
         try:
-            # Attempt ping
             return self.r.ping()
         except redis.exceptions.ConnectionError:
             logging.error('Redis database connection failed.')
