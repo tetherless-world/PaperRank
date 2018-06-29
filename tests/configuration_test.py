@@ -12,13 +12,13 @@ class TestConfiguration(unittest.TestCase):
         any settings.
         """
 
-        PaperRank.configSetup()
-        self.assertEqual(PaperRank.config.redis['host'], 'localhost')
+        PaperRank.util.configSetup()
+        self.assertEqual(PaperRank.util.config.redis['host'], 'localhost')
 
     def test_withOverride(self):
         """Testing the configuration variable intialization with setting
         override.
         """
 
-        PaperRank.configSetup(override='test.json')
-        self.assertEqual(PaperRank.config.redis['host'], 'test')
+        PaperRank.util.configSetup(override='test.json')
+        self.assertEqual(PaperRank.util.config.redis['host'], 'test')
