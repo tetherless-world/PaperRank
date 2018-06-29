@@ -1,0 +1,15 @@
+{
+    "redis": {
+        "host": "localhost",
+        "port": 6379,
+        "db": {
+            "LOG": 0,
+            "OUT": 1,
+            "SEEN": 2,
+            "GRAPH": 3,
+            "EXPLORE": 4,
+            "INSTANCE": 5,
+            "NOT": 6
+        }
+    }
+}

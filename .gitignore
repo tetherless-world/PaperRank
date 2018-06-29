@@ -6,12 +6,17 @@
 
 # Configuration files
 config/*.json
+!config/base.json
+!config/test.json
 
 # Project stuff
 tmp_*
 
-# Python stuff (from https://github.com/github/gitignore/blob/master/Python.gitignore)
+# Redis files
+dump.rdb
 
+# Python stuff (from https://github.com/github/gitignore/blob/master/Python.gitignore)
+######################################################################################
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
