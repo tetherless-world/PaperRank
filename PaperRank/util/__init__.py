@@ -1,3 +1,3 @@
-from . import database
+from . import dbconnector
 from .configuration import setup as configSetup
 from .configuration import Parameters as config
