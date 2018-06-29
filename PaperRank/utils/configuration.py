@@ -1,7 +1,5 @@
 import json
 import logging
-import os
-import pprint
 
 
 BASE_CONFIGURATION = 'config/base.json'
