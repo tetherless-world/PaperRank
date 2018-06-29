@@ -1,3 +1,5 @@
+# Imports
 from .utils import database
-from .utils import configuration as config
+from .utils.configuration import setup as configSetup
+from .utils.configuration import Parameters as config
 from . import update
