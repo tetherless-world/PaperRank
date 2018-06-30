@@ -13,8 +13,8 @@ class TestDatabase(unittest.TestCase):
         """
         PaperRank.util.configSetup()
         config = PaperRank.util.config
-        test_db = PaperRank.util.Database(host=config.redis['host'],
-                                          port=config.redis['port'], 
-                                          db=0)
+        test_db = PaperRank.util.Database(host=config.test['redis']['host'],
+                                          port=config.test['redis']['port'], 
+                                          db=config.test['redis']['db'])
         response = test_db.checkConnection()
         self.assertTrue(response)
