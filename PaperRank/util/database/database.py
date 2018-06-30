@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-import logging
-import redis
 
 
-class DatabaseConnector(ABC):
+class DatabaseAbstractClass(ABC):
     """Abstract class to describe the Database interface for the PaperRank
     application. Any database modules used in the application treat this
     as its superclass, and thus implement all of its methods.
@@ -97,48 +95,3 @@ class DatabaseConnector(ABC):
         """
 
         raise NotImplementedError
-
-
-class Redis(DatabaseConnector):
-
-    def __init__(self, host: str, port: int, db: int):
-        """Connect to the Redis database.
-        
-        Arguments:
-            host {str} -- Hostname of the database.
-            port {int} -- Port number of the database.
-            db {int} -- Database number to connect to.
-        
-        Raises:
-            RuntimeError -- Raised if the database connection failed.
-        """
-
-        # Connect to Redis
-        self.r = redis.StrictRedis(host=host, port=port, db=db)
-        self.checkConnection()
-
-    def checkConnection(self) -> bool:
-        """Check the Redis database connection.
-        
-        Raises:
-            RuntimeError -- Raised if the database connection failed.
-        
-        Returns:
-            bool -- True if connection is successful.
-        """
-
-        # Attempt ping
-        try:
-            return self.r.ping()
-        except redis.exceptions.ConnectionError:
-            logging.error('Redis database connection failed.')
-            raise RuntimeError('Redis connection failed.')
-
-    def contains(self):
-        pass
-
-    def add(self):
-        pass
-
-    def remove(self):
-        pass

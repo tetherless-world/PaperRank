@@ -3,8 +3,8 @@ from context import PaperRank
 import unittest
 
 
-class TestDBConnector(unittest.TestCase):
-    """Tests for the 'dbconnector' module
+class TestDatabase(unittest.TestCase):
+    """Tests for the 'database' module
     """
 
     def test_connectRedis(self):
@@ -13,8 +13,8 @@ class TestDBConnector(unittest.TestCase):
         """
         PaperRank.util.configSetup()
         config = PaperRank.util.config
-        test_db = PaperRank.util.dbconnector.Redis(host=config.redis['host'],
-                                                   port=config.redis['port'], 
-                                                   db=0)
+        test_db = PaperRank.util.Database(host=config.redis['host'],
+                                          port=config.redis['port'], 
+                                          db=0)
         response = test_db.checkConnection()
         self.assertTrue(response)
