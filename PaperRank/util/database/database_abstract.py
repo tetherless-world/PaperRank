@@ -39,26 +39,6 @@ class DatabaseAbstractClass(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def add(self, database: str, key: str, value: object) -> bool:
-        """Abstract class method for `add` function skeleton, which should
-        be used to add a data value with a given key and value to a database
-        with a given name.
-        
-        Arguments:
-            database {str} -- Name of the database.
-            key {str} -- Key for the value to be added.
-            value {object} -- Data to be added with the given key.
-        
-        Raises:
-            NotImplementedError -- Raised when not implemented.
-
-        Returns:
-            bool -- True if successful, false if not.
-        """
-
-        raise NotImplementedError
-
-    @abstractmethod
     def addMultiple(self, database: str, data: object) -> bool:
         """Abstract class method for `addMultiple` function skeleton,
         which should be used to add multiple values/data with a given
