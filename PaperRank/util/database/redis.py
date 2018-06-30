@@ -1,4 +1,4 @@
-from .database import DatabaseAbstractClass
+from .database_abstract import DatabaseAbstractClass
 import redis
 
 
