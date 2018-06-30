@@ -50,12 +50,12 @@ class Redis(DatabaseAbstractClass):
 
         # Mapping types
         self.db = {
-            'OUT': self.RedisHashMap,
-            'SEEN': self.RedisSet,
-            'GRAPH': self.RedisSet,
-            'EXPLORE': self.RedisSet,
-            'INSTANCE': self.RedisSet,
-            'NOT': self.RedisSet
+            'OUT': self.__RedisHashMap,
+            'SEEN': self.__RedisSet,
+            'GRAPH': self.__RedisSet,
+            'EXPLORE': self.__RedisSet,
+            'INSTANCE': self.__RedisSet,
+            'NOT': self.__RedisSet
         }
 
         # Connect to Redis
@@ -90,11 +90,26 @@ class Redis(DatabaseAbstractClass):
         Returns:
             bool -- True if it exists, false otherwise.
         """
-        
-        return self.db[database].contains(self.r, database, key)
+
+        return self.db[database].contains(r=self.r, database=database, key=key)
 
     def add(self):
         pass
+
+    @_Decorators.verifyDatabase
+    def addMultiple(self, database: str, data: object) -> bool:
+        """Add multiple values/data to the given database.
+        
+        Arguments:
+            database {str} -- Database data should be added to.
+            data {object} -- List if adding to Set, Dict if adding to HashMap.
+        
+        Returns:
+            bool -- True if successful, False otherwise.
+        """
+
+        return self.db[database].addMultiple(
+            r=self.r, database=database, values=data)
 
     def remove(self):
         pass
@@ -105,18 +120,26 @@ class Redis(DatabaseAbstractClass):
     def __getSubclass(self, database: str) -> object:
         pass
 
-    class RedisSet:
+    class __RedisSet:
         """Subclass for Redis Set datastructure operations.
         """
 
         @staticmethod
-        def contains(redis: StrictRedis, database: str, key: str) -> bool:
-            pass
+        def contains(r: object, database: str, key: str) -> bool:
+            return r.sismember(name=database, value=key)
 
-    class RedisHashMap:
+        @staticmethod
+        def addMultiple(r: object, database: str, values: list) -> bool:
+            return r.sadd(database, *values)
+
+    class __RedisHashMap:
         """Subclass for Redis HashMap data structure operations.
         """
 
         @staticmethod
-        def contains(redis: StrictRedis, database: str, key: str) -> bool:
-            pass
+        def contains(r: StrictRedis, database: str, key: str) -> bool:
+            return r.hexists(name=database, key=key)
+
+        @staticmethod
+        def addMultiple(r: object, database: str, values: dict) -> bool:
+            return r.hmset(database, values)
