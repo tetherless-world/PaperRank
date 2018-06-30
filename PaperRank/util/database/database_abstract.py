@@ -97,11 +97,14 @@ class DatabaseAbstractClass(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def pop(self, n: int=1) -> list:
+    def pop(self, database: str, n: int=1) -> list:
         """Abstract class method for the `pop` function skeleton, which should
         be implemented to remove and return `n` items from a collection in the
         databse. The number of items is optional, with the default being one.
         
+        Arguments:
+            database {str} -- Name of the database.
+
         Keyword Arguments:
             n {int} -- Number of items to return (default: {1}).
         

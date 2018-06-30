@@ -1,5 +1,37 @@
 from .database_abstract import DatabaseAbstractClass
+from functools import wraps
+import logging
+from redis.client import StrictRedis
 import redis
+
+# CONSTANTS
+# ==========
+
+# Abbreviation-key mapping
+ABBR = {
+    'O': 'OUT',
+    'S': 'SEEN',
+    'G': 'GRAPH',
+    'E': 'EXPLORE',
+    'I': 'INSTANCE',
+    'N': 'NOT'
+}
+
+
+class _Decorators:
+    @classmethod
+    def verifyDatabase(cls, decorated):
+        """Decorator to verify that the database being requested is valid,
+        if so update with the full database name.
+        """
+
+        @wraps(decorated)
+        def wrapper(*args, **kwargs):
+            if kwargs['database'] not in ABBR.keys():
+                raise RuntimeError('Unknown database name provided.')
+            kwargs['database'] = ABBR[kwargs['database']]
+            return decorated(*args, **kwargs)
+        return wrapper
 
 
 class Redis(DatabaseAbstractClass):
@@ -15,6 +47,16 @@ class Redis(DatabaseAbstractClass):
         Raises:
             RuntimeError -- Raised if the database connection failed.
         """
+
+        # Mapping types
+        self.db = {
+            'OUT': self.RedisHashMap,
+            'SEEN': self.RedisSet,
+            'GRAPH': self.RedisSet,
+            'EXPLORE': self.RedisSet,
+            'INSTANCE': self.RedisSet,
+            'NOT': self.RedisSet
+        }
 
         # Connect to Redis
         self.r = redis.StrictRedis(host=host, port=port, db=db)
@@ -37,29 +79,44 @@ class Redis(DatabaseAbstractClass):
             logging.error('Redis database connection failed.')
             raise RuntimeError('Redis connection failed.')
 
-    def contains(self, key: str) -> bool:
+    @_Decorators.verifyDatabase
+    def contains(self, database: str, key: str) -> bool:
         """Check if a given key exists in the Redis database.
         
         Arguments:
+            database {str} -- Name of the database.
             key {str} -- Key to be checked.
         
         Returns:
             bool -- True if it exists, false otherwise.
         """
-
-        try:
-            return self.r.exists(key)
-        except Exception:
-            logging.warn('Key lookup operation failed')
-
-    def setContainsValue(self, set_key: str, value: str) -> bool:
-        try:
-            return self.r.sismember(name=set_key, value=value)
-        except Exception:
-            logging.warn('Set lookup operation failed.')
+        
+        return self.db[database].contains(self.r, database, key)
 
     def add(self):
         pass
 
     def remove(self):
         pass
+
+    def pop(self, n: int) -> list:
+        pass
+
+    def __getSubclass(self, database: str) -> object:
+        pass
+
+    class RedisSet:
+        """Subclass for Redis Set datastructure operations.
+        """
+
+        @staticmethod
+        def contains(redis: StrictRedis, database: str, key: str) -> bool:
+            pass
+
+    class RedisHashMap:
+        """Subclass for Redis HashMap data structure operations.
+        """
+
+        @staticmethod
+        def contains(redis: StrictRedis, database: str, key: str) -> bool:
+            pass
