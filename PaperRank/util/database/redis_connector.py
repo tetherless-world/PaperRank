@@ -93,9 +93,6 @@ class Redis(DatabaseAbstractClass):
 
         return self.db[database].contains(r=self.r, database=database, key=key)
 
-    def add(self):
-        pass
-
     @_Decorators.verifyDatabase
     def addMultiple(self, database: str, data: object) -> bool:
         """Add multiple values/data to the given database.
@@ -110,15 +107,6 @@ class Redis(DatabaseAbstractClass):
 
         return self.db[database].addMultiple(
             r=self.r, database=database, values=data)
-
-    def remove(self):
-        pass
-
-    def pop(self, n: int) -> list:
-        pass
-
-    def __getSubclass(self, database: str) -> object:
-        pass
 
     class __RedisSet:
         """Subclass for Redis Set datastructure operations.
