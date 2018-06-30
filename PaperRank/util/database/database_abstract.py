@@ -59,6 +59,25 @@ class DatabaseAbstractClass(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def addMultiple(self, database: str, data: object) -> bool:
+        """Abstract class method for `addMultiple` function skeleton,
+        which should be used to add multiple values/data with a given
+        key and value to a database with a given name.
+        
+        Arguments:
+            database {str} -- Database data should be added to.
+            data {object} -- List if adding to Set, Dict if adding to HashMap.
+        
+        Raises:
+            NotImplementedError -- Raised when not implemented.
+
+        Returns:
+            bool -- True if successful, false if not.
+        """
+        
+        raise NotImplementedError
+
+    @abstractmethod
     def remove(self, database: str, key: str) -> object:
         """Abstract class method for `remove` function skeleton, which should
         be implemented to remove data corresponding to a given key and
