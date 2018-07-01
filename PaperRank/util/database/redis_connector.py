@@ -123,8 +123,35 @@ class Redis(DatabaseAbstractClass):
         return self.db[database].removeMultiple(database=database, data=data)
 
     @_Decorators.verifyDatabase
-    def pop(self, database: str, n: int) -> list:
+    def pop(self, database: str, n: int=1) -> list:
+        """Removes and returns `n` elements from a Set.
+        
+        Arguments:
+            database {str} -- Database elements are popped from.
+        
+        Keyword Arguments:
+            n {int} -- Number of elements to return (default: {1}).
+        
+        Returns:
+            list -- Popped elements.
+        """
+
         return self.db[database].pop(r=self.r, database=database, n=n)
+
+    @_Decorators.verifyDatabase
+    def size(self, database: str) -> int:
+        """Return the size of a given database. Number of keys returned
+        for HashMap, and the number of elements for a Set.
+        
+        Arguments:
+            r {object} -- [description]
+            database {str} -- Database for which size is returned.
+        
+        Returns:
+            int -- Size of the database.
+        """
+
+        return self.db[database].size(r=self.r, database=database)
 
     class __RedisSet:
         """Subclass for Redis Set datastructure operations.
@@ -146,6 +173,10 @@ class Redis(DatabaseAbstractClass):
         def pop(r: object, database: str, n: int) -> bool:
             return r.spop(database, n)
 
+        @staticmethod
+        def size(r: object, database: str) -> int:
+            return r.scard(database)
+
     class __RedisHashMap:
         """Subclass for Redis HashMap data structure operations.
         """
@@ -165,3 +196,7 @@ class Redis(DatabaseAbstractClass):
         @staticmethod
         def pop(r: object, database: str, n: int) -> bool:
             raise NotImplementedError
+
+        @staticmethod
+        def size(r: object, database: str) -> int:
+            return r.hlen(database)

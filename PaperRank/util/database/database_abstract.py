@@ -114,3 +114,21 @@ class DatabaseAbstractClass(ABC):
             list -- List of popped items.
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def size(self, database: str) -> int:
+        """Abstract class method for the `size` function skeleton, which should
+        be implemented to return the size in the case of a Set, and the number
+        of keys in the case of a HashMap for a given database.
+        
+        Arguments:
+            database {str} -- Database for which size is returned.
+        
+        Raises:
+            NotImplementedError -- Raised when not implemented.
+        
+        Returns:
+            int -- Size of the database.
+        """
+
+        raise NotImplementedError
