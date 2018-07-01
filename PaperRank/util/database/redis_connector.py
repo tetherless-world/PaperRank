@@ -120,7 +120,9 @@ class Redis(DatabaseAbstractClass):
             bool -- True if successful, False otherwise.
         """
 
-        return self.db[database].removeMultiple(database=database, data=data)
+        out = self.db[database].removeMultiple(
+            r=self.r, database=database, data=data)
+        return out is not None
 
     @_Decorators.verifyDatabase
     def pop(self, database: str, n: int=1) -> list:
@@ -166,12 +168,17 @@ class Redis(DatabaseAbstractClass):
             return r.sadd(database, *values)
 
         @staticmethod
-        def removeMultiple(r: object, database: str, data: list) -> bool:
+        def removeMultiple(r: object, database: str, data: list) -> int:
             return r.srem(database, *data)
 
         @staticmethod
-        def pop(r: object, database: str, n: int) -> bool:
-            return r.spop(database, n)
+        def pop(r: object, database: str, n: int) -> list:
+            # Note: Doing it this way because `redis` has a bug
+            # where the spop(count) function does not work.
+            popped = r.srandmember(name=database, number=n)
+            # Removing popped elements
+            r.srem(database, *popped)
+            return popped
 
         @staticmethod
         def size(r: object, database: str) -> int:
@@ -190,7 +197,7 @@ class Redis(DatabaseAbstractClass):
             return r.hmset(database, values)
 
         @staticmethod
-        def removeMultiple(r: object, database: str, data: list) -> bool:
+        def removeMultiple(r: object, database: str, data: list) -> int:
             return r.hdel(database, *data)
 
         @staticmethod
