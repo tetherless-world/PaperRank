@@ -58,14 +58,14 @@ class DatabaseAbstractClass(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def remove(self, database: str, key: str) -> object:
-        """Abstract class method for `remove` function skeleton, which should
-        be implemented to remove data corresponding to a given key and
+    def removeMultiple(self, database: str, data: list) -> object:
+        """Abstract class method for `removeAll` function skeleton, which should
+        be implemented to remove data corresponding to given keys and
         database name.
         
         Arguments:
             database {str} -- Name of the database.
-            key {str} -- Key for the value to be removed.
+            data {list} -- Keys for the values to be removed.
         
         Raises:
             NotImplementedError -- Raised when not implemented.
@@ -98,7 +98,7 @@ class DatabaseAbstractClass(ABC):
     @abstractmethod
     def pop(self, database: str, n: int=1) -> list:
         """Abstract class method for the `pop` function skeleton, which should
-        be implemented to remove and return `n` items from a collection in the
+        be implemented to remove and return `n` items from a set in the
         databse. The number of items is optional, with the default being one.
         
         Arguments:

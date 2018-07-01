@@ -108,6 +108,24 @@ class Redis(DatabaseAbstractClass):
         return self.db[database].addMultiple(
             r=self.r, database=database, values=data)
 
+    @_Decorators.verifyDatabase
+    def removeMultiple(self, database: str, data: list) -> bool:
+        """Remove multiple values from the given database.
+        
+        Arguments:
+            database {str} -- Database data should be removed from.
+            data {list} -- List of keys/data to be removed.
+        
+        Returns:
+            bool -- True if successful, False otherwise.
+        """
+
+        return self.db[database].removeMultiple(database=database, data=data)
+
+    @_Decorators.verifyDatabase
+    def pop(self, database: str, n: int) -> list:
+        return self.db[database].pop(r=self.r, database=database, n=n)
+
     class __RedisSet:
         """Subclass for Redis Set datastructure operations.
         """
@@ -120,6 +138,14 @@ class Redis(DatabaseAbstractClass):
         def addMultiple(r: object, database: str, values: list) -> bool:
             return r.sadd(database, *values)
 
+        @staticmethod
+        def removeMultiple(r: object, database: str, data: list) -> bool:
+            return r.srem(database, *data)
+
+        @staticmethod
+        def pop(r: object, database: str, n: int) -> bool:
+            return r.spop(database, n)
+
     class __RedisHashMap:
         """Subclass for Redis HashMap data structure operations.
         """
@@ -131,3 +157,11 @@ class Redis(DatabaseAbstractClass):
         @staticmethod
         def addMultiple(r: object, database: str, values: dict) -> bool:
             return r.hmset(database, values)
+
+        @staticmethod
+        def removeMultiple(r: object, database: str, data: list) -> bool:
+            return r.hdel(database, *data)
+
+        @staticmethod
+        def pop(r: object, database: str, n: int) -> bool:
+            raise NotImplementedError
