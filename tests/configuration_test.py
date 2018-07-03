@@ -22,3 +22,10 @@ class TestConfiguration(unittest.TestCase):
 
         PaperRank.util.configSetup(override='test.json')
         self.assertEqual(PaperRank.util.config.redis['host'], 'test')
+
+    def test_overrideExisting(self):
+        """Testing that configuration override does not delete existing params.
+        """
+
+        PaperRank.util.configSetup(override='test.json')
+        self.assertEqual(PaperRank.util.config.ncbi_api['tool'], 'PaperRank')
