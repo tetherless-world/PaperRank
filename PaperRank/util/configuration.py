@@ -1,3 +1,4 @@
+import collections
 import json
 import logging
 
@@ -34,14 +35,31 @@ def setup(override: str=''):
             logging.error('Override configuration file config/{0} not found.')
             raise RuntimeError('Invalid configuraiton override file.')
 
-        # Removing override parameters from base config
-        all(map(base_config.pop, override_config))
-        base_config.update(override_config)
+        # Update base config with override parameters
+        base_config = update(base_config, override_config)
 
     # Add to parameters
     global Parameters
     Parameters.__dict__.update(base_config)
 
+
+def update(d, u):
+    """Function to update a dictionary with values from another.
+    
+    Arguments:
+        d {dict} -- Base dictionary.
+        u {dict} -- Update dictionary.
+    
+    Returns:
+        dict -- Updated dictionary.
+    """
+
+    for k, v in u.items():
+        if isinstance(v, collections.Mapping):
+            d[k] = update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
 
 @staticmethod
 def Parameters():
