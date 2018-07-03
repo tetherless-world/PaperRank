@@ -14,7 +14,8 @@ ABBR = {
     'G': 'GRAPH',
     'E': 'EXPLORE',
     'I': 'INSTANCE',
-    'N': 'NOT'
+    'N': 'NOT',
+    'L': 'LOG'
 }
 
 
