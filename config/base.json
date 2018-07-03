@@ -4,6 +4,11 @@
         "port": 6379,
         "db": 0
     },
+    "ncbi_api": {
+        "api_key": null,
+        "tool": "PaperRank",
+        "dev_email": "rukmal.weerawarana@gmail.com"
+    },
     "test": {
         "redis": {
             "host": "localhost",
