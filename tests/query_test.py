@@ -22,8 +22,11 @@ class TestQuery(unittest.TestCase):
             host=self.config.test['redis']['host'],
             port=self.config.test['redis']['port'],
             db=self.config.test['redis']['db'])
-        test = PaperRank.update.Query(db=db,
-                                      pmids=[21876761, 21876726,
-                                             29409535, 29025144],
-                                      suppress_worker=True)
+        # Testing Query module
+        PaperRank.update.Query(db=db,
+                               pmids=[21876761, 21876726,
+                                      29409535, 29025144],
+                               suppress_worker=True)
+        # Testing behavior with invalid IDs
+        PaperRank.update.Query(db=db, pmids=['sdfgsdg'])
         self.assertTrue(True)
