@@ -73,6 +73,12 @@ class Query:
             self.__spawnWorker(linkset=linkset_container)
 
     def __spawnWorker(self, linkset: OrderedDict):
+        """Function to create a Citation object and spawn a Worker thread.
+        
+        Arguments:
+            linkset {OrderedDict} -- Raw response from the NCBI API.
+        """
+
         # Create citation object
         citation = Citation(query_raw=linkset)
         # Spawn worker

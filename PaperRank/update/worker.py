@@ -5,6 +5,15 @@ import logging
 
 class Worker:
     def __init__(self, db: Database, citation: Citation):
+        """Worker class initialization. Adds tuples to GRAPH, maps outbound
+        citations in OUT, adds unseen IDs to EXPLORE, and adds and removes
+        current ID to and from INSTANCE.
+        
+        Arguments:
+            db {Database} -- Database to be used for data transactions.
+            citation {Citation} -- Citation object to be parsed.
+        """
+
         self.db = db
         self.citation = citation
 
@@ -36,10 +45,9 @@ class Worker:
 
             # Utilizing redis base class pipeline to execute commands in order
             # see: https://bit.ly/2u0J96d
-            
+
             # Create pipeline object
             pipe = self.db.r.pipeline()
-            
             # Add all inbound and outbound IDs to EXPLORE
             pipe.sadd('EXPLORE',
                       *self.citation.inbound, *self.citation.outbound)
