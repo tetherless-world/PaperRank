@@ -34,10 +34,20 @@ class Worker:
                                     self.citation.id: self.citation.outbound
                                 })
 
-            # TODO: Add inbound and outbound citations to the EXPLORE
-            # Figure out how to do this without multiple database calls,
-            # currently you would need one for each pubmedID
-            # Why? To check `SEEN`, and then to add to `EXPLORE`
+            # Utilizing redis base class pipeline to execute commands in order
+            # see: https://bit.ly/2u0J96d
+            
+            # Create pipeline object
+            pipe = self.db.r.pipeline()
+            
+            # Add all inbound and outbound IDs to EXPLORE
+            pipe.sadd('EXPLORE',
+                      *self.citation.inbound, *self.citation.outbound)
+            # Store the difference of `EXPLORE`` and `SEEN` in `EXPLORE`
+            pipe.sdiffstore('EXPLORE', 'EXPLORE', 'SEEN')
+            # Execute commands
+            pipe.execute()
+
         else:
             # No inbound or outbound citations; add to `DANGLING`
             self.db.addMultiple(database='D', data=[self.citation.id])
