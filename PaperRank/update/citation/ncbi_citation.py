@@ -6,7 +6,7 @@ import logging
 
 class NCBICitation(CitationAbstractClass):
 
-    def __init__(self, db: Database, query_raw: OrderedDict):
+    def __init__(self, query_raw: OrderedDict):
         """Construct a NCBICitation object, given the raw response
         from the NCBI Entrez API. This method extracts the citation `id`,
         and constructs the `outbound` and `inbound` lists.
@@ -15,12 +15,17 @@ class NCBICitation(CitationAbstractClass):
             query_raw {OrderedDict} -- Raw response from the NCBI API.
         """
 
-        # Setting default values for inbound and outbound (i.e. none)
+        # Setting default values for inbound, outbound, and error
         self.outbound = []
         self.inbound = []
 
         # Extracting ID
         self.id = str(query_raw['IdList']['Id'])
+
+        # Setting `error` to True if the ID is 0 (i.e. not found) and return
+        if self.id is '0':
+            self.error = True
+            return
 
         try:
             if type(query_raw['LinkSetDb']) is list:
@@ -31,8 +36,7 @@ class NCBICitation(CitationAbstractClass):
                 # Only inbound or outbound exists
                 self.__parseResponseHelper(query_raw['LinkSetDb'])
         except Exception:
-            # No input or output links found, add to database and log
-            db.addMultiple(database='D', data=[self.id])
+            # No input or output links found, log ID
             logging.warn('No inbound or outbound citations found for {0}'
                          .format(self.id))
 
@@ -80,3 +84,12 @@ class NCBICitation(CitationAbstractClass):
         """
 
         return self.id
+
+    def error(self) -> bool:
+        """Return the `error` flag of the citation.
+        
+        Returns:
+            bool -- True if there is an error, False otherwise.
+        """
+
+        return self.error

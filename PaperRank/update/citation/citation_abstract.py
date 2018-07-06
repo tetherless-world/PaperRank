@@ -24,7 +24,7 @@ class CitationAbstractClass(ABC):
         raise NotImplementedError
 
     @property
-    def id(self):
+    def id(self) -> str:
         """Abstract property `id`. This attribute will store the ID
         of the citation.
         
@@ -35,7 +35,7 @@ class CitationAbstractClass(ABC):
         raise NotImplementedError
 
     @property
-    def outbound(self):
+    def outbound(self) -> list:
         """Abstract property `outbound`. This attribute will store a list
         of outbound citations.
         
@@ -46,12 +46,23 @@ class CitationAbstractClass(ABC):
         raise NotImplementedError
 
     @property
-    def inbound(self):
+    def inbound(self) -> list:
         """Abstract propert `inbound`. This attribute will store a list of
         inbound citations.
         
         Raises:
             NotImplementedError -- Raised when not implemented.
+        """
+
+        raise NotImplementedError
+    
+    @property
+    def error(self) -> bool:
+        """Abstract property `error`. This attribute will be flag for if there
+        was an error while parsing to control worker thread spawning.
+        
+        Raises:
+            NotImplementedError -- Raised when not implemeneted.
         """
 
         raise NotImplementedError
