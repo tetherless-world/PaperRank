@@ -11,7 +11,7 @@ class DatabaseAbstractClass(ABC):
     """
 
     @abstractmethod
-    def __init__(self, *args):
+    def __init__(self):
         """Abstract class method for `__init__` function skeleton, which should
         be used to implement the database connection function. Arguments to
         this function are not defined, as they will be idiosyncratic to the
