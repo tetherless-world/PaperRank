@@ -7,34 +7,31 @@ class TestDatabase(unittest.TestCase):
     """Tests for the 'database' module
     """
 
-    def __setup(self) -> PaperRank.util.Database:
+    def __init__(self, *args, **kwargs):
+        super(TestDatabase, self).__init__(*args, **kwargs)
         PaperRank.util.configSetup()
-        config = PaperRank.util.config
-        test_db = PaperRank.util.Database(host=config.test['redis']['host'],
-                                          port=config.test['redis']['port'], 
-                                          db=config.test['redis']['db'])
-        test_db.r.flushdb()  # Accessing directly to flush testing database
-        return test_db
+        self.config = PaperRank.util.config
+        self.db = PaperRank.util.Database(
+            host=self.config.test['redis']['host'],
+            port=self.config.test['redis']['port'],
+            db=self.config.test['redis']['db'])
 
     def test_connectRedis(self):
         """Redis database connector connection test.
         """
 
-        test_db = self.__setup()
-        response = test_db.checkConnection()
+        response = self.db.checkConnection()
         self.assertTrue(response)
 
     def test_addMultiple(self):
         """`addMultiple` function test.
         """
-        
-        test_db = self.__setup()
 
         # Adding list of numbers to 'seen' test database (a Set)
-        setAdd = test_db.addMultiple(database='S',
+        setAdd = self.db.addMultiple(database='S',
                                      data=[1, 2, 3, 4, 5])
         # Add multiple entry dict to 'out' test database (a HashMap)
-        hashmapAdd = test_db.addMultiple(database='O',
+        hashmapAdd = self.db.addMultiple(database='O',
                                          data={'first': 'rukmal',
                                                'last': 'weerawarana'})
         # Both are successful
@@ -44,21 +41,19 @@ class TestDatabase(unittest.TestCase):
         """`removeMultiple` function test.
         """
 
-        test_db = self.__setup()
-
         # Add some elements to Set
-        test_db.addMultiple(database='S', data=[1, 2, 34, 5])
+        self.db.addMultiple(database='S', data=[1, 2, 34, 5])
         # Removing elements
-        setRemove = test_db.removeMultiple(database='S', data=[2, 34])
+        setRemove = self.db.removeMultiple(database='S', data=[2, 34])
 
         # Add some elements to HashMap
-        test_db.addMultiple(database='O',
+        self.db.addMultiple(database='O',
                             data={'first': 'rukmal',
                                   'last': 'weerawarana',
                                   'age': '22',
                                   'location': 'Troy, NY'})
         # Removing elements
-        hashmapRemove = test_db.removeMultiple(database='O',
+        hashmapRemove = self.db.removeMultiple(database='O',
                                                data=['first', 'age'])
 
         # Both are successful
@@ -68,18 +63,16 @@ class TestDatabase(unittest.TestCase):
         """`contains` function test.
         """
 
-        test_db = self.__setup()
-
         # Add items to Set
-        test_db.addMultiple(database='S', data=[1, 2, 3, 4, 5])
-        setContains = test_db.contains(database='S', key='1')
+        self.db.addMultiple(database='S', data=[1, 2, 3, 4, 5])
+        setContains = self.db.contains(database='S', key='1')
 
         # Add items to HashMap
-        test_db.addMultiple(database='O',
+        self.db.addMultiple(database='O',
                             data={'first': 'rukmal',
                                   'last': 'weerawarana'})
         # Checking  elements
-        hashmapContains = test_db.contains(database='O',
+        hashmapContains = self.db.contains(database='O',
                                            key='first')
 
         self.assertTrue(setContains and hashmapContains)
@@ -88,13 +81,11 @@ class TestDatabase(unittest.TestCase):
         """`pop` function test.
         """
 
-        test_db = self.__setup()
-
         # Add items to Set
-        test_db.addMultiple(database='S', data=[1, 2, 3, 4, 5])
+        self.db.addMultiple(database='S', data=[1, 2, 3, 4, 5])
 
         # Pop 2 elements
-        popped = test_db.pop(database='S', n=2)
+        popped = self.db.pop(database='S', n=2)
 
         # pop was successful
         self.assertEqual(len(popped), 2)
@@ -103,19 +94,20 @@ class TestDatabase(unittest.TestCase):
         """`size` function test.
         """
 
-        test_db = self.__setup()
+        # Flush test database (manual access)
+        self.db.r.flushdb()
 
         # Add items to Set
-        test_db.addMultiple(database='S', data=[1, 2])
+        self.db.addMultiple(database='S', data=[1, 2])
         # Getting size
-        setSize = test_db.size(database='S')
+        setSize = self.db.size(database='S')
 
         # Add items to HashMap
-        test_db.addMultiple(database='O',
+        self.db.addMultiple(database='O',
                             data={'first': 'rukmal',
                                   'last': 'weerawarana'})
         # Getting size
-        hashmapSize = test_db.size(database='O')
+        hashmapSize = self.db.size(database='O')
 
         # size was sucessful
         self.assertEqual(setSize + hashmapSize, 4)
