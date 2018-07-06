@@ -58,7 +58,8 @@ class Redis(DatabaseAbstractClass):
             'EXPLORE': self.__RedisSet,
             'INSTANCE': self.__RedisSet,
             'NOT': self.__RedisSet,
-            'DANGLING': self.__RedisSet
+            'DANGLING': self.__RedisSet,
+            'LOG': self.__RedisSet
         }
 
         # Connect to Redis
