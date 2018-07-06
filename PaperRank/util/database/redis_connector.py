@@ -15,7 +15,8 @@ ABBR = {
     'E': 'EXPLORE',
     'I': 'INSTANCE',
     'N': 'NOT',
-    'L': 'LOG'
+    'L': 'LOG',
+    'D': 'DANGLING'
 }
 
 
@@ -56,7 +57,8 @@ class Redis(DatabaseAbstractClass):
             'GRAPH': self.__RedisSet,
             'EXPLORE': self.__RedisSet,
             'INSTANCE': self.__RedisSet,
-            'NOT': self.__RedisSet
+            'NOT': self.__RedisSet,
+            'DANGLING': self.__RedisSet
         }
 
         # Connect to Redis

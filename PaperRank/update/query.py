@@ -65,7 +65,8 @@ class Query:
 
         while len(linkset_container) is not 0:
             linkset = linkset_container.pop()   # Removing next element
-            citation = Citation(linkset)  # Creating citation object
+            # Creating citation object
+            citation = Citation(db=self.db, query_raw=linkset)
             # TODO: Spawn worker thread here with citation_map as input
 
     def __failedRequestHandler(self):

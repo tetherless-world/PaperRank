@@ -1,11 +1,12 @@
 from .citation_abstract import CitationAbstractClass
+from ...util import Database
 from collections import OrderedDict
 import logging
 
 
 class NCBICitation(CitationAbstractClass):
 
-    def __init__(self, query_raw: OrderedDict):
+    def __init__(self, db: Database, query_raw: OrderedDict):
         """Construct a NCBICitation object, given the raw response
         from the NCBI Entrez API. This method extracts the citation `id`,
         and constructs the `outbound` and `inbound` lists.
@@ -21,13 +22,19 @@ class NCBICitation(CitationAbstractClass):
         # Extracting ID
         self.id = str(query_raw['IdList']['Id'])
 
-        if type(query_raw['LinkSetDb']) is list:
-            # Both inbound and outbound exist, iterate through
-            for citation_direction in query_raw['LinkSetDb']:
-                self.__parseResponseHelper(citation_direction)
-        else:
-            # Only inbound or outbound exists
-            self.__parseResponseHelper(query_raw['LinkSetDb'])
+        try:
+            if type(query_raw['LinkSetDb']) is list:
+                # Both inbound and outbound exist, iterate through
+                for citation_direction in query_raw['LinkSetDb']:
+                    self.__parseResponseHelper(citation_direction)
+            else:
+                # Only inbound or outbound exists
+                self.__parseResponseHelper(query_raw['LinkSetDb'])
+        except Exception:
+            # No input or output links found, add to database and log
+            db.addMultiple(database='D', data=[self.id])
+            logging.warn('No inbound or outbound citations found for {0}'
+                         .format(self.id))
 
     def __parseResponseHelper(self, citation_direction: OrderedDict):
         """Helper function for `__init__` to extract citations from the
