@@ -18,6 +18,7 @@ class NCBICitation(CitationAbstractClass):
         # Setting default values for inbound, outbound, and error
         self.outbound = []
         self.inbound = []
+        self.error = False
 
         # Extracting ID
         self.id = str(query_raw['IdList']['Id'])
