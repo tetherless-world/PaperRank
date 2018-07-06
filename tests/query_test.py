@@ -23,5 +23,6 @@ class TestQuery(unittest.TestCase):
             port=self.config.test['redis']['port'],
             db=self.config.test['redis']['db'])
         test = PaperRank.update.Query(db=db,
-                                      pmids=[21876761, 21876726, 29409535])
+                                      pmids=[21876761, 21876726, 29409535],
+                                      suppress_worker=True)
         self.assertTrue(True)

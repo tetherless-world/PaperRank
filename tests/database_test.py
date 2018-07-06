@@ -95,7 +95,7 @@ class TestDatabase(unittest.TestCase):
 
         # Pop 2 elements
         popped = test_db.pop(database='S', n=2)
-        print(popped)
+
         # pop was successful
         self.assertEqual(len(popped), 2)
 

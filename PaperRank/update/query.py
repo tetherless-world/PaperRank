@@ -8,7 +8,7 @@ import threading
 
 
 class Query:
-    def __init__(self, db: Database, pmids: list):
+    def __init__(self, db: Database, pmids: list, suppress_worker: bool=False):
         """Query class initialization. Makes request and delegates worker
         threads with response data.
         
