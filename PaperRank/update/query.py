@@ -1,3 +1,4 @@
+from .worker import Worker
 from ..util import config, Database
 from .citation.ncbi_citation import NCBICitation as Citation
 from collections import OrderedDict
@@ -63,11 +64,19 @@ class Query:
         except KeyError:
             self.__failedRequestHandler()
 
-        while len(linkset_container) is not 0:
-            linkset = linkset_container.pop()   # Removing next element
-            # Creating citation object
-            citation = Citation(db=self.db, query_raw=linkset)
-            # TODO: Spawn worker thread here with citation_map as input
+        # TODO: Make multithreaded
+        if type(linkset_container) is list:
+            # Multiple citations, spawn workers for each
+            [self.__spawnWorker(linkset=i) for i in linkset_container]
+        else:
+            # Single citation
+            self.__spawnWorker(linkset=linkset_container)
+
+    def __spawnWorker(self, linkset: OrderedDict):
+        # Create citation object
+        citation = Citation(query_raw=linkset)
+        # Spawn worker
+        Worker(db=self.db, citation=citation)
 
     def __failedRequestHandler(self):
         """Function to handle a failed request.
