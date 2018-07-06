@@ -35,7 +35,15 @@ class TestQuery(unittest.TestCase):
         dangling_count = self.db.size(database='D')
         seen_count = self.db.size(database='S')
 
-        self.assertEqual(dangling_count + seen_count, 5)
+        # Note: As this is a clean database, the number of
+        # tuples added to `GRAPH` should be equal to the number of
+        # IDs added to `EXPLORE`, as they are all not in `SEEN`. This implies
+        # that their difference should be 0, and not affect the sum of the
+        # number of IDs in `DANGLING` and the number of IDs in `SEEN`
+        explore_graph_diff = self.db.size(database='G') \
+            - self.db.size(database='E')
+
+        self.assertEqual(dangling_count + seen_count + explore_graph_diff, 5)
 
         # Flush test database again (manual access)
         self.db.r.flushdb()
