@@ -3,7 +3,7 @@ from context import PaperRank
 import unittest
 
 
-class TestQuery(unittest.TestCase):
+class TestQueryAndWorker(unittest.TestCase):
     """Tests for the Query and Worker modules.
     """
 
@@ -11,7 +11,7 @@ class TestQuery(unittest.TestCase):
         """Override initialization function to setup PaperRank config.
         """
 
-        super(TestQuery, self).__init__(*args, **kwargs)
+        super(TestQueryAndWorker, self).__init__(*args, **kwargs)
         PaperRank.util.configSetup()
         self.config = PaperRank.util.config
         self.db = PaperRank.util.Database(
