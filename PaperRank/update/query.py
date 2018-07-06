@@ -64,7 +64,6 @@ class Query:
         except KeyError:
             self.__failedRequestHandler()
 
-        # TODO: Make multithreaded
         if type(linkset_container) is list:
             # Multiple citations, spawn workers for each
             [self.__spawnWorker(linkset=i) for i in linkset_container]

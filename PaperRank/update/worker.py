@@ -31,7 +31,7 @@ class Worker:
         in_tuples = ['("{0}","{1}")'.format(i, self.citation.id)
                      for i in self.citation.inbound]
 
-        if len(out_tuples) + len(in_tuples) > 0:
+        if (len(out_tuples) + len(in_tuples)) > 0:
             # Check if inbound or outbound citations exist
 
             # Adding tuples to `GRAPH`
