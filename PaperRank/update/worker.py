@@ -22,9 +22,17 @@ class Worker:
         in_tuples = ['("{0}","{1}")'.format(i, self.citation.id)
                      for i in self.citation.inbound]
 
-        # Adding tuples to `GRAPH`, if inbound and outbound citations exist
         if len(out_tuples) + len(in_tuples) > 0:
+            # Check if inbound or outbound citations exist
+
+            # Adding tuples to `GRAPH`
             self.db.addMultiple(database='G', data=[*in_tuples, *out_tuples])
+
+            # Save outbound citations to `OUT`
+            self.db.addMultiple(database='O',
+                                data={
+                                    self.citation.id: self.citation.outbound
+                                })
 
             # TODO: Add inbound and outbound citations to the EXPLORE
             # Figure out how to do this without multiple database calls,
