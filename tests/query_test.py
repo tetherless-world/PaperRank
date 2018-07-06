@@ -36,3 +36,6 @@ class TestQuery(unittest.TestCase):
         seen_count = self.db.size(database='S')
 
         self.assertEqual(dangling_count + seen_count, 5)
+
+        # Flush test database again (manual access)
+        self.db.r.flushdb()
