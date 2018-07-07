@@ -111,3 +111,16 @@ class TestDatabase(unittest.TestCase):
 
         # size was sucessful
         self.assertEqual(setSize + hashmapSize, 4)
+
+    def test_isEmpty(self):
+        """`isEmpty` function test.
+        """
+
+        # Check if `SEEN` database is empty (should return False)
+        seen_empty = self.db.isEmpty(database='S')
+
+        # Check if `INSTANCE` database is empty (should return True)
+        instance_empty = self.db.isEmpty(database='I')
+
+        # isEmpty was successful
+        self.assertTrue(instance_empty and not seen_empty)
