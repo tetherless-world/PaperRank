@@ -10,7 +10,7 @@
         "email": "rukmal.weerawarana@gmail.com",
         "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi",
         "pmid_per_request": 200,
-        "requests_per_second": 3
+        "request_per_second": 3
     },
     "test": {
         "redis": {
