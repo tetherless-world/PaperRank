@@ -159,6 +159,21 @@ class Redis(DatabaseAbstractClass):
 
         return self.db[database].size(r=self.r, database=database)
 
+    @_Decorators.verifyDatabase
+    def isEmpty(self, database: str) -> bool:
+        """Function to check if a given database is empty.
+        
+        Arguments:
+            database {str} -- Database to be checked.
+        
+        Returns:
+            bool -- True if empty, False if not empty.
+        """
+
+        # NOTE: Redis automatically deletes empty Sets and Hashes,
+        #       so this replicates the desired functionality in O(1).
+        return not self.r.exists(database)
+
     class __RedisSet:
         """Subclass for Redis Set datastructure operations.
         """

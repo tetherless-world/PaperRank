@@ -132,3 +132,21 @@ class DatabaseAbstractClass(ABC):
         """
 
         raise NotImplementedError
+
+    @abstractmethod
+    def isEmpty(self, database: str) -> bool:
+        """Abstract class method for the `isEmpty` function skeleton, which
+        should be implemented to return True if the provided database is
+        empty, and False if it is not empty.
+        
+        Arguments:
+            database {str} -- Database to be checked.
+        
+        Raises:
+            NotImplementedError -- Raised when not implemented.
+        
+        Returns:
+            bool -- True if empty, False if not empty.
+        """
+
+        raise NotImplementedError
