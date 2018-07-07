@@ -38,8 +38,8 @@ class NCBICitation(CitationAbstractClass):
                 self.__parseResponseHelper(query_raw['LinkSetDb'])
         except Exception:
             # No input or output links found, log ID
-            logging.info('No inbound or outbound citations found for {0}'
-                         .format(self.id))
+            logging.warning('No inbound or outbound citations found for {0}'
+                            .format(self.id))
 
     def __parseResponseHelper(self, citation_direction: OrderedDict):
         """Helper function for `__init__` to extract citations from the
