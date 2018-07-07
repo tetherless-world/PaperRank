@@ -66,6 +66,5 @@ class Manager:
         pipe.sunionstore('EXPLORE', 'EXPLORE', 'INSTANCE')
         # Delete `INSTANCE`
         pipe.delete('INSTANCE')
-        pipe.delete('THIS SHOULD FAIL')
         # Execute commands
         pipe.execute()
