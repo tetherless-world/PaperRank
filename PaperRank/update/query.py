@@ -24,7 +24,8 @@ class Query:
         # Building request parameters
         request_paramters = self.__buildRequestParams()
         # Making request
-        r = get(url=config.ncbi_api['url'], params=request_paramters)
+        r = get(url=config.ncbi_api['url'], params=request_paramters,
+                timeout=5)
         if r.ok:
             self.__successfulRequestHandler(response_raw=r.text)
         else:
@@ -66,7 +67,8 @@ class Query:
 
         if type(linkset_container) is list:
             # Multiple citations, spawn workers for each
-            workers = [self.__spawnWorker(linkset=i) for i in linkset_container]
+            workers = [self.__spawnWorker(linkset=i)
+                       for i in linkset_container]
         else:
             # Single citation
             workers = [self.__spawnWorker(linkset=linkset_container)]

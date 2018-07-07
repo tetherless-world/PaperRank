@@ -35,6 +35,8 @@ class Manager:
         while not self.db.isEmpty(database='E'):
             # Isolate PMIDs 
             pmids = self.db.pop(database='E', n=self.pmid_per_second)
+            # Writing to instance nodes
+            self.db.addMultiple(database='I', data=pmids)
             # Logging progress
             logging.info('Extracted {0} PubMed IDs for scraping'
                          .format(len(pmids)))

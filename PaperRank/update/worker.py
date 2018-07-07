@@ -21,9 +21,8 @@ class Worker:
             # Escape if there is an error
             return
 
-        # Adding to `SEEN` and `INSTANCE`
+        # Adding to `SEEN`
         self.db.addMultiple(database='S', data=[self.citation.id])
-        self.db.addMultiple(database='I', data=[self.citation.id])
 
         # Building inbound and outbound tuples
         out_tuples = ['("{0}","{1}")'.format(self.citation.id, i)
