@@ -61,6 +61,7 @@ def update(d, u):
             d[k] = v
     return d
 
+
 @staticmethod
 def Parameters():
     """Static function to store configuration variables. This function
