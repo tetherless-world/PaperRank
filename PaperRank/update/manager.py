@@ -50,6 +50,9 @@ class Manager:
                              .format(len(pmids[0:self.pmid_per_request])))
                 # Remove used PMIDs from list
                 del pmids[0:self.pmid_per_request]
+            # Log current status
+            logging.info('Running {0} threads'
+                         .format(threading.active_count()))
             # Wait for 1 second
             sleep(1)
 

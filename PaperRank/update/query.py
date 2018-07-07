@@ -93,4 +93,4 @@ class Query:
         # Add failed PubMed IDs to log database
         db.addMultiple(database='L', data=self.pmids)
         # Logging warning
-        logging.warn('Request failed for {0}'.format(self.pmids))
+        logging.warning('Request failed for {0}'.format(self.pmids))
