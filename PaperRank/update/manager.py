@@ -1,8 +1,8 @@
 from ..util import config, Database
 from .query import Query
+from multiprocessing import Process
 from time import sleep
 import logging
-import threading
 
 
 class Manager:
@@ -41,20 +41,16 @@ class Manager:
             # Loop through until empty
             while len(pmids) > 0:
                 # Spawn thread with Query worker, and PMIDs
-                t = threading.Thread(target=Query, kwargs={
+                t = Process(target=Query, kwargs={
                     'db': self.db,
                     'pmids': pmids[0:self.pmid_per_request]
                 })
                 t.start()
-                t.join()
                 # Logging progress
                 logging.info('Spawned Query thread with {0} PubMed IDs'
                              .format(len(pmids[0:self.pmid_per_request])))
                 # Remove used PMIDs from list
                 del pmids[0:self.pmid_per_request]
-            # Log current status
-            logging.info('Running {0} threads'
-                         .format(threading.active_count()))
             # Wait for 1 second
             sleep(1)
 

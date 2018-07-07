@@ -2,10 +2,10 @@ from .worker import Worker
 from ..util import config, Database
 from .citation.ncbi_citation import NCBICitation as Citation
 from collections import OrderedDict
+from multiprocessing import Process
 from requests import get
 from xmltodict import parse
 import logging
-import threading
 
 
 class Query:
@@ -81,12 +81,11 @@ class Query:
         # Create citation object
         citation = Citation(query_raw=linkset)
         # Spawn worker, start thread
-        t = threading.Thread(target=Worker, kwargs={
+        t = Process(target=Worker, kwargs={
             'db': self.db,
             'citation': citation
         })
         t.start()
-        t.join()
 
     def __failedRequestHandler(self):
         """Function to handle a failed request.
