@@ -51,7 +51,7 @@ export_deps_nix:
 
 # Rule to export requirements.txt for pip.
 export_deps_pip:
-	conda list -e > requirements.txt
+	pip freeze > requirements.txt
 
 # Parent rule to export both *nix and Windows environment files.
 export_deps: export_deps_nix export_deps_win export_deps_pip
