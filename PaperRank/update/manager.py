@@ -39,18 +39,21 @@ class Manager:
             logging.info('Extracted {0} PubMed IDs for scraping'
                          .format(len(pmids)))
             # Loop through until empty
+            queries = []
             while len(pmids) > 0:
                 # Spawn thread with Query worker, and PMIDs
                 t = Process(target=Query, kwargs={
                     'db': self.db,
                     'pmids': pmids[0:self.pmid_per_request]
                 })
-                t.start()
+                queries.append(t)
                 # Logging progress
                 logging.info('Spawned Query thread with {0} PubMed IDs'
                              .format(len(pmids[0:self.pmid_per_request])))
                 # Remove used PMIDs from list
                 del pmids[0:self.pmid_per_request]
+            [t.start() for t in queries]
+            [t.join() for t in queries]
             # Wait for 1 second
             sleep(1)
 

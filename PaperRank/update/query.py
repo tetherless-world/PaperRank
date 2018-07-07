@@ -66,10 +66,12 @@ class Query:
 
         if type(linkset_container) is list:
             # Multiple citations, spawn workers for each
-            [self.__spawnWorker(linkset=i) for i in linkset_container]
+            workers = [self.__spawnWorker(linkset=i) for i in linkset_container]
         else:
             # Single citation
-            self.__spawnWorker(linkset=linkset_container)
+            workers = [self.__spawnWorker(linkset=linkset_container)]
+        [t.start() for t in workers]
+        [t.join() for t in workers]
 
     def __spawnWorker(self, linkset: OrderedDict):
         """Function to create a Citation object and spawn a Worker thread.
@@ -85,7 +87,7 @@ class Query:
             'db': self.db,
             'citation': citation
         })
-        t.start()
+        return t
 
     def __failedRequestHandler(self):
         """Function to handle a failed request.
