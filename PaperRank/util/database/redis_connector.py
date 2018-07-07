@@ -63,7 +63,8 @@ class Redis(DatabaseAbstractClass):
         }
 
         # Connect to Redis
-        self.r = redis.StrictRedis(host=host, port=port, db=db)
+        pool = redis.ConnectionPool(host=host, port=port, db=db)
+        self.r = redis.StrictRedis(connection_pool=pool)
         self.checkConnection()
 
     def checkConnection(self) -> bool:
