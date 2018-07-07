@@ -84,7 +84,7 @@ class Query:
         threading.Thread(target=Worker, kwargs={
             'db': self.db,
             'citation': citation
-            }).start()
+        }).start()
 
     def __failedRequestHandler(self):
         """Function to handle a failed request.
