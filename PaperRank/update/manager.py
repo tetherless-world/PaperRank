@@ -41,10 +41,12 @@ class Manager:
             # Loop through until empty
             while len(pmids) > 0:
                 # Spawn thread with Query worker, and PMIDs
-                threading.Thread(target=Query, kwargs={
+                t = threading.Thread(target=Query, kwargs={
                     'db': self.db,
                     'pmids': pmids[0:self.pmid_per_request]
-                }).start()
+                })
+                t.start()
+                t.join()
                 # Logging progress
                 logging.info('Spawned Query thread with {0} PubMed IDs'
                              .format(len(pmids[0:self.pmid_per_request])))

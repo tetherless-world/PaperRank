@@ -81,10 +81,12 @@ class Query:
         # Create citation object
         citation = Citation(query_raw=linkset)
         # Spawn worker, start thread
-        threading.Thread(target=Worker, kwargs={
+        t = threading.Thread(target=Worker, kwargs={
             'db': self.db,
             'citation': citation
-        }).start()
+        })
+        t.start()
+        t.join()
 
     def __failedRequestHandler(self):
         """Function to handle a failed request.
