@@ -1,5 +1,6 @@
 from context import PaperRank
 import logging
+import redis
 import sys
 
 ########################
@@ -35,17 +36,18 @@ PaperRank.util.configSetup(override='default.json')
 
 config = PaperRank.util.config
 
-# Connecting to database
-db = PaperRank.util.Database(
+# Creating redis-py connection pool
+conn_pool = redis.ConnectionPool(
     host=config.redis['host'],
-    port=config.redis['port'],
+    port=confg.redis['port'],
     db=config.redis['db']
 )
 
-manager = PaperRank.update.Manager(db=db)
+# Creating Manager
+manager = PaperRank.update.Manager(conn_pool=conn_pool)
 
-# Adding some IDs to the EXPLORE set for initialization, if empty
-if db.isEmpty(database='E'):
-    db.addMultiple(database='E', data=[21876761, 21876726])
+# # Adding some IDs to the EXPLORE set for initialization, if empty
+# if db.isEmpty(database='E'):
+#     db.addMultiple(database='E', data=[21876761, 21876726])
 
 manager.start()
