@@ -75,7 +75,6 @@ class Manager:
 
                 # Create Query workers
                 while len(pmids) > 0:
-                    # TODO: FIX THIS
                     pool.apply_async(Query, **{
                         'conn_pool': self.conn_pool,
                         'pmids': pmids[0:self.pmid_per_request],
@@ -84,6 +83,10 @@ class Manager:
                     })
                     proc_count.value += 1
                     del pmids[0:self.pmid_per_request]
+
+                # Log number of processes
+                logging.info('Currently running {0} Query processes'
+                             .format(proc_count))
 
                 # Release lock
                 lock.release()
