@@ -1,35 +1,68 @@
-from .worker import Worker
-from ..util import config, Database
-from .citation.ncbi_citation import NCBICitation as Citation
+from .worker import worker
+from ..util import config
+from multiprocessing import Manager, Value, Lock
 from collections import OrderedDict
-from multiprocessing import Process
+from redis.client import StrictPipeline
+from redis import ConnectionPool, StrictRedis
 from requests import get
 from xmltodict import parse
 import logging
 
 
 class Query:
-    def __init__(self, db: Database, pmids: list):
-        """Query class initialization. Makes request and delegates worker
-        threads with response data.
-        
-        Arguments:
-            pmids {list} -- List of PubMed IDs to be queried.
-            db {Database} -- Database to be used for data transactions.
-        """
+    def __init__(self, conn_pool: ConnectionPool, pmids: list,
+                 proc_count: Value, lock: Lock):
 
-        self.db = db
         self.pmids = pmids
 
+        db = StrictRedis(connection_pool=conn_pool)
+
+        # Creating redis pipeline
+        pipe = db.pipeline()
+
         # Building request parameters
-        request_paramters = self.__buildRequestParams()
+        request_parameters = self.__buildRequestParams()
+
         # Making request
-        r = get(url=config.ncbi_api['url'], params=request_paramters,
-                timeout=5)
+        r = get(url=config.ncbi_api['url'], params=request_parameters)
+
+        # Check validity, handle appropriately
         if r.ok:
-            self.__successfulRequestHandler(response_raw=r.text)
+            pipe = self.__successfulRequestHandler(pipe=pipe,
+                                                   response_raw=r.text)
         else:
-            self.__failedRequestHandler()
+            pipe = self.__failedRequestHandler(pipe=pipe)
+
+        # Execute database calls
+        pipe.execute()  # Blocking
+
+        # Acquire lock, decrement process counter, release lock
+        lock.acquire()
+        proc_count.value -= 1
+        lock.release()
+
+    def __successfulRequestHandler(self, pipe: StrictPipeline,
+                                   response_raw: str) -> StrictPipeline:
+        # Parse XML
+        response = parse(response_raw)
+
+        # Parsing query results
+        try:
+            linkset_container = response['eLinkResult']['LinkSet']
+        except KeyError:
+            # Handle failed request
+            self.__failedRequestHandler(pipe)
+            return pipe
+        
+        if type(linkset_container) is list:
+            # Multiple citations, queue operations for each ID
+            for linkset in linkset_container:
+                pipe = worker(pipe, linkset=linkset)
+        else:
+            # Single citation, list
+            pipe = worker(pipe=pipe, linkset=linkset_container)
+        
+        return pipe
 
     def __buildRequestParams(self) -> dict:
         """Function to build request parameter dictionary.
@@ -48,54 +81,21 @@ class Query:
         }
         return default_headers
 
-    def __successfulRequestHandler(self, response_raw: str):
-        """Function to handle a successful request response. This function
-        spawns worker threads for each response item.
+    def __failedRequestHandler(self, pipe: StrictPipeline) -> StrictPipeline:
+        """Failed request handler. Removes the current PMIIDs from the list
+        in 'INSTANCE', and adds the IDs back to 'EXPLORE' for retrying.
         
         Arguments:
-            response_raw {str} -- Response raw text.
-        """
-
-        # Parse XML
-        response = parse(response_raw)
-
-        # Parsing query results
-        try:
-            linkset_container = response['eLinkResult']['LinkSet']
-        except KeyError:
-            self.__failedRequestHandler()
-
-        if type(linkset_container) is list:
-            # Multiple citations, spawn workers for each
-            workers = [self.__spawnWorker(linkset=i)
-                       for i in linkset_container]
-        else:
-            # Single citation
-            workers = [self.__spawnWorker(linkset=linkset_container)]
-        [t.start() for t in workers]
-        [t.join() for t in workers]
-
-    def __spawnWorker(self, linkset: OrderedDict):
-        """Function to create a Citation object and spawn a Worker thread.
+            pipe {StrictPipeline} -- Pipeline for the database operations.
         
-        Arguments:
-            linkset {OrderedDict} -- Raw response from the NCBI API.
+        Returns:
+            StrictPipeline -- Pipeline with queued operations.
         """
 
-        # Create citation object
-        citation = Citation(query_raw=linkset)
-        # Spawn worker, start thread
-        t = Process(target=Worker, kwargs={
-            'db': self.db,
-            'citation': citation
-        })
-        return t
+        # Gracefully recover progress
+        pipe.srem('INSTANCE', *self.pmids)
+        pipe.sadd('EXPLORE', *self.pmids)
 
-    def __failedRequestHandler(self):
-        """Function to handle a failed request.
-        """
+        logging.warn('Query failed for PMIDs {0}'.format(self.pmids))
 
-        # Add failed PubMed IDs to log database
-        db.addMultiple(database='L', data=self.pmids)
-        # Logging warning
-        logging.warning('Request failed for {0}'.format(self.pmids))
+        return pipe
