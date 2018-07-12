@@ -4,11 +4,11 @@ from multiprocessing import Pool, Manager
 from time import sleep
 import logging
 import os
-import redis
+from redis import ConnectionPool, StrictRedis
 
 
 class Manager:
-    def __init__(self, conn_pool: redis.ConnectionPool,
+    def __init__(self, conn_pool: ConnectionPool,
                  recover: bool=True):
         """Manager class initialization. Loads configuration variables,
         and recovers gracefully from a crash by default.
@@ -24,7 +24,7 @@ class Manager:
         self.conn_pool = conn_pool
 
         # Creating database object for the Manager
-        self.db = redis.Redis(connection_pool=self.conn_pool)
+        self.db = StrictRedis(connection_pool=self.conn_pool)
 
         # Recovering from failure
         if recover:
@@ -43,7 +43,7 @@ class Manager:
         pool_size = os.cpu_count()
 
         # Creating process pool, limiting reuse
-        pool = Pool(process=pool_size, maxtasksperchild=10)
+        pool = Pool(processes=pool_size, maxtasksperchild=10)
 
         # Creating manager object, shared counter value, and lock
         m = Manager()
@@ -75,12 +75,13 @@ class Manager:
 
                 # Create Query workers
                 while len(pmids) > 0:
-                    pool.apply_async(Query, (
+                    # TODO: FIX THIS
+                    pool.apply_async(Query, **{
                         'conn_pool': self.conn_pool,
                         'pmids': pmids[0:self.pmid_per_request],
                         'proc_count': proc_count,
                         'lock': lock
-                    ))
+                    })
                     proc_count.value += 1
                     del pmids[0:self.pmid_per_request]
 
