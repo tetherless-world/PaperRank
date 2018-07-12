@@ -4,4 +4,4 @@ ADD . /app
 
 RUN pip install -r app/requirements.txt
 
-CMD [ "python", "app/scripts/test.py" ]
+CMD [ "python", "app/scripts/multiprocessing_test.py" ]
