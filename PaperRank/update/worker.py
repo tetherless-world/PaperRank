@@ -9,12 +9,11 @@ def worker(pipe: StrictPipeline, linkset: OrderedDict) -> StrictPipeline:
     and removes current ID from INSTANCE.
     
     Arguments:
-        pipe {StrictPipeline} -- Pipeline object to be used for queueing.
+        pipe {StrictPipeline} -- Pipeline for the database operations.
         linkset {OrderedDict} -- Raw response from the NCBI API.
     
     Returns:
-        StrictPipeline -- Modified `StrictPipeline` object with new actions
-                          queued.
+        StrictPipeline -- Pipeline with queued operations.
     """
 
     # Create citation object
