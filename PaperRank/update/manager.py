@@ -77,7 +77,9 @@ class Manager:
                 while len(pmids) > 0:
                     pool.apply_async(Query, (
                         'conn_pool': self.conn_pool,
-                        'pmids': pmids[0:self.pmid_per_request]
+                        'pmids': pmids[0:self.pmid_per_request],
+                        'proc_count': proc_count,
+                        'lock': lock
                     ))
                     proc_count.value += 1
                     del pmids[0:self.pmid_per_request]
