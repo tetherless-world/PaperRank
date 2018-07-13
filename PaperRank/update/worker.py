@@ -50,9 +50,6 @@ def worker(pipe: StrictPipeline, linkset: OrderedDict) -> StrictPipeline:
     else:
         # No inbound or outbound citations; add to `DANGLING`
         pipe.sadd('DANGLING', citation.id)
-    
-    # Remove current ID from 'INSTANCE'
-    pipe.srem('INSTANCE', citation.id)
 
     # Return pipe object with new instructions
     return pipe
