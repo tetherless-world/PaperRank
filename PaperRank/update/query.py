@@ -11,6 +11,16 @@ import logging
 
 def Query(conn_pool: ConnectionPool, pmids: list, proc_count: Value,
           lock: Lock):
+    
+    logging.info('Spawned Query process with {0} PMIDs'.format(len(pmids)))
+
+    # Temporary until redis-py multiprocessing is fixed
+    if not conn_pool:
+        conn_pool = ConnectionPool(
+            host=config.redis['host'],
+            port=config.redis['port'],
+            db=config.redis['db']
+        )
 
     db = StrictRedis(connection_pool=conn_pool)
 
@@ -51,7 +61,7 @@ def __successfulRequestHandler(pipe: StrictPipeline,
         linkset_container = response['eLinkResult']['LinkSet']
     except KeyError:
         # Handle failed request
-        __failedRequestHandler(pipe=pipe, pmids=pmids)
+        pipe = __failedRequestHandler(pipe=pipe, pmids=pmids)
         return pipe
     
     if type(linkset_container) is list:
