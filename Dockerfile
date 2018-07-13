@@ -2,6 +2,8 @@ FROM python:3.7
 
 ADD . /app
 
-RUN pip install -r app/requirements.txt
+RUN pip install -r /app/requirements.txt
 
-CMD [ "python", "app/scripts/multiprocessing_test.py" ]
+WORKDIR /app/scripts
+
+CMD [ "python", "full_scrape.py" ]
