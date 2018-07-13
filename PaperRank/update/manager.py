@@ -97,10 +97,11 @@ class Manager:
                              .format(proc_count.value))
                 logging.info('There are {0} PMIDs left in EXPLORE size cache'
                              .format(explore_count))
-                logging.info('Currently on cycle {0} with {1} left before \
-                             process clean'.format(
-                                 counter,
-                                 self.clean_interval - counter))
+                logging.info(
+                    'Currently on cycle {0} with {1} left before process clean'
+                    .format(
+                        counter,
+                        self.clean_interval - counter))
 
                 # Release lock
                 lock.release()
@@ -180,6 +181,8 @@ class Manager:
         # Closing pool
         pool.close()
         # Joining processes
+        logging.info('Waiting for {0} processes to join'
+                     .format(proc_count.value))
         pool.join()
         self.recoverInstance()
         return self.createProcessPoolObjects()
