@@ -43,7 +43,7 @@ class Manager:
         self.pool_size = os.cpu_count() * 20
         self.maxtasksperchild = 10
 
-        # Setting clean interval, every 100 cycles
+        # Setting clean interval, every 1000 cycles
         self.clean_interval = 1000
 
     def start(self):
@@ -173,7 +173,10 @@ class Manager:
 
         logging.info('Cleaning process pool with {0} processes'
                      .format(proc_count.value))
+        # Closing pool
         pool.close()
+        # Joining processes
+        pool.join()
         self.recoverInstance()
         return self.createProcessPoolObjects()
     
