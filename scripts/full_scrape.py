@@ -39,7 +39,7 @@ config = PaperRank.util.config
 # Creating redis-py connection pool
 conn_pool = redis.ConnectionPool(
     host=config.redis['host'],
-    port=confg.redis['port'],
+    port=config.redis['port'],
     db=config.redis['db']
 )
 
