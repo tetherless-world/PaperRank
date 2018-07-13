@@ -110,6 +110,8 @@ class Manager:
                 if counter >= self.clean_interval:
                     # Clean EXPLORE
                     self.cleanExplore()
+                    # Update explore_count
+                    explore_count = self.getExplorationCount()
                     # Reset counter
                     counter = 0
 
