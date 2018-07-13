@@ -88,6 +88,8 @@ class Manager:
                 # Log number of processes
                 logging.info('Currently running {0} Query processes'
                              .format(proc_count.value))
+                logging.info('There are {0} PMIDs left in EXPLORE size cache'
+                             .format(explore_count))
 
                 # Release lock
                 lock.release()
