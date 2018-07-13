@@ -121,6 +121,15 @@ class Manager:
 
             # Wait for 1 second
             sleep(1)
+        
+        # Close process pool
+        pool.close()
+        # Wait for processes to finish
+        pool.join()
+        # Terminate pool
+        pool.terminate()
+        logging.info('Scrape completed with {0} IDs'
+                     .format(self.db.scard('SEEN')))
 
     def recoverInstance(self):
         """Move `INSTANCE` IDs to `EXPLORE`, to recover
