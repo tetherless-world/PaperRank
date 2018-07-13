@@ -57,7 +57,6 @@ class Manager:
         while explore_count > 0:
             # Check if process limit is not reached
             if proc_count.value < pool_size:
-                
                 # Get PMIDs
                 pmids = self.db.srandmember(
                     name='EXPLORE',
@@ -73,6 +72,9 @@ class Manager:
 
                 # Acquire lock for counter
                 lock.acquire()
+
+                # Reducing explore_count
+                explore_count -= len(pmids)
 
                 # Create Query workers
                 while len(pmids) > 0:
