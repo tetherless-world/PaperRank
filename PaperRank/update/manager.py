@@ -1,6 +1,6 @@
 from ..util import config
 from .query import Query
-from multiprocessing import Pool
+from multiprocessing import Pool, Value, Lock
 from multiprocessing import Manager as ProcManager
 from time import sleep
 import logging
@@ -38,28 +38,29 @@ class Manager:
         self.pmid_per_request = config.ncbi_api['pmid_per_request']
         self.request_per_second = config.ncbi_api['request_per_second']
         self.pmid_per_second = self.pmid_per_request * self.request_per_second
-    
+
+        # Setting pool size and maxtasksperchild
+        self.pool_size = os.cpu_count() * 20
+        self.maxtasksperchild = 10
+
+        # Setting clean interval, every 100 cycles
+        self.clean_interval = 1000
+
     def start(self):
         """Function to start scraping.
         """
 
-        # Setting process pool size
-        pool_size = os.cpu_count() * 50
-
-        # Creating process pool, limiting reuse
-        pool = Pool(processes=pool_size, maxtasksperchild=10)
-
-        # Creating manager object, shared counter value, and lock
-        m = ProcManager()
-        proc_count = m.Value('i', 0)
-        lock = m.Lock()
+        # Creating initial process pool
+        (pool, m, proc_count, lock) = self.createProcessPoolObjects()
 
         # Getting initial exploration counter
         explore_count = self.getExplorationCount()
 
+        counter = 0
+
         while explore_count > 0:
             # Check if process limit is not reached
-            if proc_count.value < pool_size:
+            if proc_count.value < self.pool_size:
                 # Get PMIDs
                 pmids = self.db.srandmember(
                     name='EXPLORE',
@@ -76,8 +77,9 @@ class Manager:
                 # Acquire lock for counter
                 lock.acquire()
 
-                # Reducing explore_count
+                # Reducing explore_count, increment counter
                 explore_count -= len(pmids)
+                counter += 1
 
                 # Create Query workers
                 while len(pmids) > 0:
@@ -99,8 +101,19 @@ class Manager:
                 # Release lock
                 lock.release()
 
+                # Also close and re-create pool
+                if counter >= self.clean_interval:
+                    # Clean and recreate process pool
+                    (pool, m, proc_count, lock) = self.cleanProcessPool(
+                        pool=pool,
+                        proc_count=proc_count)
+                    # Clean EXPLORE
+                    self.cleanExplore()
+                    # Reset counter
+                    counter = 0
+
             # Check if explore count is near 0, if so update
-            if explore_count < 2000:
+            if explore_count < self.pmid_per_request:
                 explore_count = self.getExplorationCount()
 
             # Wait for 1 second
@@ -110,7 +123,8 @@ class Manager:
         """Move `INSTANCE` IDs to `EXPLORE`, to recover
         from a crash/exit.
         """
-
+        logging.info('Recovering {0} IDs from INSTANCE'
+                     .format(self.db.scard('INSTANCE')))
         pipe = self.db.pipeline()
         # Move everything from `INSTANCE` to `EXPLORE`
         pipe.sunionstore('EXPLORE', 'EXPLORE', 'INSTANCE')
@@ -143,3 +157,42 @@ class Manager:
         # Logging after
         logging.info('{0} PMIDs in Explore and {1} PMIDs in SEEN after clean'
                      .format(self.db.scard('EXPLORE'), self.db.scard('SEEN')))
+
+    def cleanProcessPool(self, pool: Pool, proc_count: Value) \
+            -> (Pool, ProcManager, Value, Lock):
+        """Function to close the current process pool and return new Process
+        pool objects.
+        
+        Arguments:
+            pool {Pool} -- Current process pool.
+            proc_count {Value} -- Current process counter.
+        
+        Returns:
+            Pool, ProcManager, Value, Lock -- New process pool objects.
+        """
+
+        logging.info('Cleaning process pool with {0} processes'
+                     .format(proc_count.value))
+        pool.close()
+        self.recoverInstance()
+        return self.createProcessPoolObjects()
+    
+    def createProcessPoolObjects(self) -> (Pool, ProcManager, Value, Lock):
+        """Function to return new Process Pool objects; a new Pool, ProcManager,
+        Value (proc_counter) and Lock.
+        
+        Returns:
+            Pool, ProcManager, Value, Lock -- New process pool objects.
+        """
+
+        logging.info('Creating new process pool with {0} workers'
+                     .format(self.pool_size))
+        pool = Pool(processes=self.pool_size, 
+                    maxtasksperchild=self.maxtasksperchild)
+        logging.info('Creating new multiprocessing.Manager object')
+        m = ProcManager()
+        logging.info('Creating new proc_count at 0')
+        proc_count = m.Value('i', 0)
+        logging.info('Creating new lock object')
+        lock = m.Lock()
+        return (pool, m, proc_count, lock)
