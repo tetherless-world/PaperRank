@@ -31,6 +31,9 @@ class Manager:
         if recover:
             self.recoverInstance()
 
+        # Removing SEEN IDs from EXPLORE
+        self.db.sdiffstore('EXPLORE', 'EXPLORE', 'SEEN')
+
         # Getting configuration information
         self.pmid_per_request = config.ncbi_api['pmid_per_request']
         self.request_per_second = config.ncbi_api['request_per_second']
@@ -41,7 +44,7 @@ class Manager:
         """
 
         # Setting process pool size
-        pool_size = os.cpu_count()
+        pool_size = os.cpu_count() * 50
 
         # Creating process pool, limiting reuse
         pool = Pool(processes=pool_size, maxtasksperchild=10)

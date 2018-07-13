@@ -41,6 +41,8 @@ def Query(conn_pool: ConnectionPool, pmids: list, proc_count: Value,
     else:
         pipe = __failedRequestHandler(pipe=pipe, pmids=pmids)
 
+    logging.info('Executing Query process database actions with {0} PMIDs'
+                 .format(len(pmids)))
     # Execute database calls
     pipe.execute()  # Blocking
 
