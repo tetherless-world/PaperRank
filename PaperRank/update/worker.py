@@ -45,7 +45,8 @@ def worker(pipe: StrictPipeline, linkset: OrderedDict) -> StrictPipeline:
         pipe.sadd('EXPLORE',
                   *citation.inbound, *citation.outbound)
         # Store the difference of `EXPLORE`` and `SEEN` in `EXPLORE`
-        pipe.sdiffstore('EXPLORE', 'EXPLORE', 'SEEN')
+        # NOTE: Temporarily commented out, this takes too long
+        # pipe.sdiffstore('EXPLORE', 'EXPLORE', 'SEEN')
     else:
         # No inbound or outbound citations; add to `DANGLING`
         pipe.sadd('DANGLING', citation.id)
