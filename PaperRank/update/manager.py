@@ -92,11 +92,15 @@ class Manager:
                     proc_count.value += 1
                     del pmids[0:self.pmid_per_request]
 
-                # Log number of processes
+                # Log stuff
                 logging.info('Currently running {0} Query processes'
                              .format(proc_count.value))
                 logging.info('There are {0} PMIDs left in EXPLORE size cache'
                              .format(explore_count))
+                logging.info('Currently on cycle {0} with {1} left before \
+                             process clean'.format(
+                                 counter,
+                                 self.clean_interval - counter))
 
                 # Release lock
                 lock.release()
