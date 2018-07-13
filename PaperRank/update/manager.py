@@ -122,6 +122,10 @@ class Manager:
             # Wait for 1 second
             sleep(1)
         
+        logging.info('EXPLORE empty, currently {0} IDs in INSTANCE'
+                     .format(self.db.scard('INSTANCE')))
+        logging.info('Waiting for {0} processes to join'
+                     .format(proc_count.value))
         # Close process pool
         pool.close()
         # Wait for processes to finish
