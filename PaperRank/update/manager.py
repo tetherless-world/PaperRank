@@ -43,8 +43,8 @@ class Manager:
         self.pool_size = os.cpu_count() * 20
         self.maxtasksperchild = 10
 
-        # Setting clean interval, every 200 cycles
-        self.clean_interval = 200
+        # Setting clean interval
+        self.updateCleanInterval()
 
     def start(self):
         """Function to start scraping.
@@ -173,7 +173,36 @@ class Manager:
         # Logging after
         logging.info('{0} PMIDs in Explore and {1} PMIDs in SEEN after clean'
                      .format(self.db.scard('EXPLORE'), self.db.scard('SEEN')))
-    
+        # Updating clean interval
+        self.updateCleanInterval()
+
+    def updateCleanInterval(self):
+        """Function to set the clean interval, depending on the size of SEEN.
+        The interval reduces the larger SEEN gets, as it is more likely that
+        IDs are already seen as SEEN gets larger.
+        """
+
+        # Isolating SEEN size
+        seen_size = self.db.scard('SEEN')
+
+        # Updating clean interval
+        if seen_size < 10**5:
+            # Less than 10,000
+            self.clean_interval = 1000
+        elif seen_size < 10**6:
+            # Less than 1,000,000
+            self.clean_interval = 200
+        elif seen_size < 10**7:
+            # Less than 10,000,000
+            self.clean_interval = 100
+        else:
+            # More than 10,000,000
+            self.clean_interval = 25
+
+        # Logging
+        logging.info('Updated clean_interval to {0}'
+                     .format(self.clean_interval))
+
     def createProcessPoolObjects(self) -> (Pool, ProcManager, Value, Lock):
         """Function to return new Process Pool objects; a new Pool, ProcManager,
         Value (proc_counter) and Lock.
