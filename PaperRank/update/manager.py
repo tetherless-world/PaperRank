@@ -1,6 +1,7 @@
 from ..util import config
 from .query import Query
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool
+from multiprocessing import Manager as ProcManager
 from time import sleep
 import logging
 import os
@@ -46,7 +47,7 @@ class Manager:
         pool = Pool(processes=pool_size, maxtasksperchild=10)
 
         # Creating manager object, shared counter value, and lock
-        m = Manager()
+        m = ProcManager()
         proc_count = m.Value('i', 0)
         lock = m.Lock()
 
@@ -56,9 +57,9 @@ class Manager:
         while explore_count > 0:
             # Check if process limit is not reached
             if proc_count.value < pool_size:
-
+                
                 # Get PMIDs
-                pmids = self.db.srandmemeber(
+                pmids = self.db.srandmember(
                     name='EXPLORE',
                     number=self.pmid_per_second)
                 # Removing popped elements
@@ -75,22 +76,22 @@ class Manager:
 
                 # Create Query workers
                 while len(pmids) > 0:
-                    pool.apply_async(Query, **{
-                        'conn_pool': self.conn_pool,
-                        'pmids': pmids[0:self.pmid_per_request],
-                        'proc_count': proc_count,
-                        'lock': lock
-                    })
+                    pool.apply_async(Query, (
+                        False,
+                        pmids[0:self.pmid_per_request],
+                        proc_count,
+                        lock
+                    ))
                     proc_count.value += 1
                     del pmids[0:self.pmid_per_request]
 
                 # Log number of processes
                 logging.info('Currently running {0} Query processes'
-                             .format(proc_count))
+                             .format(proc_count.value))
 
                 # Release lock
                 lock.release()
-            
+
             # Check if explore count is near 0, if so update
             if explore_count < 2000:
                 explore_count = self.getExplorationCount()
@@ -103,7 +104,7 @@ class Manager:
         from a crash/exit.
         """
 
-        pipe = self.db.r.pipeline()
+        pipe = self.db.pipeline()
         # Move everything from `INSTANCE` to `EXPLORE`
         pipe.sunionstore('EXPLORE', 'EXPLORE', 'INSTANCE')
         # Delete `INSTANCE`
