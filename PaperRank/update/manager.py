@@ -43,8 +43,8 @@ class Manager:
         self.pool_size = os.cpu_count() * 20
         self.maxtasksperchild = 10
 
-        # Setting clean interval, every 1000 cycles
-        self.clean_interval = 1000
+        # Setting clean interval, every 200 cycles
+        self.clean_interval = 200
 
     def start(self):
         """Function to start scraping.
@@ -98,7 +98,7 @@ class Manager:
                 logging.info('There are {0} PMIDs left in EXPLORE size cache'
                              .format(explore_count))
                 logging.info(
-                    'Currently on cycle {0} with {1} left before process clean'
+                    'Currently on cycle {0} with {1} left before clean'
                     .format(
                         counter,
                         self.clean_interval - counter))
@@ -108,10 +108,6 @@ class Manager:
 
                 # Also close and re-create pool
                 if counter >= self.clean_interval:
-                    # Clean and recreate process pool
-                    (pool, m, proc_count, lock) = self.cleanProcessPool(
-                        pool=pool,
-                        proc_count=proc_count)
                     # Clean EXPLORE
                     self.cleanExplore()
                     # Reset counter
@@ -162,30 +158,6 @@ class Manager:
         # Logging after
         logging.info('{0} PMIDs in Explore and {1} PMIDs in SEEN after clean'
                      .format(self.db.scard('EXPLORE'), self.db.scard('SEEN')))
-
-    def cleanProcessPool(self, pool: Pool, proc_count: Value) \
-            -> (Pool, ProcManager, Value, Lock):
-        """Function to close the current process pool and return new Process
-        pool objects.
-        
-        Arguments:
-            pool {Pool} -- Current process pool.
-            proc_count {Value} -- Current process counter.
-        
-        Returns:
-            Pool, ProcManager, Value, Lock -- New process pool objects.
-        """
-
-        logging.info('Cleaning process pool with {0} processes'
-                     .format(proc_count.value))
-        # Closing pool
-        pool.close()
-        # Joining processes
-        logging.info('Waiting for {0} processes to join'
-                     .format(proc_count.value))
-        pool.join()
-        self.recoverInstance()
-        return self.createProcessPoolObjects()
     
     def createProcessPoolObjects(self) -> (Pool, ProcManager, Value, Lock):
         """Function to return new Process Pool objects; a new Pool, ProcManager,
