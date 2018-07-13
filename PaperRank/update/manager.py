@@ -187,7 +187,7 @@ class Manager:
 
         logging.info('Creating new process pool with {0} workers'
                      .format(self.pool_size))
-        pool = Pool(processes=self.pool_size, 
+        pool = Pool(processes=self.pool_size,
                     maxtasksperchild=self.maxtasksperchild)
         logging.info('Creating new multiprocessing.Manager object')
         m = ProcManager()
