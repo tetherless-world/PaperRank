@@ -31,8 +31,8 @@ class Manager:
         if recover:
             self.recoverInstance()
 
-        # Removing SEEN IDs from EXPLORE
-        self.db.sdiffstore('EXPLORE', 'EXPLORE', 'SEEN')
+        # Cleaning EXPLORE
+        self.cleanExplore()        
 
         # Getting configuration information
         self.pmid_per_request = config.ncbi_api['pmid_per_request']
@@ -128,3 +128,18 @@ class Manager:
         """
 
         return int(self.db.scard('EXPLORE'))
+
+    def cleanExplore(self):
+        """Function to clean EXPLORE, by removing all items already
+        in SEEN.
+        """
+
+        # Logging before
+        logging.info('{0} PMIDs in Explore and {1} PMIDs in SEEN before clean'
+                     .format(self.db.scard('EXPLORE'), self.db.scard('SEEN')))
+        # Removing SEEN IDs from EXPLORE
+        logging.info('Removing SEEN IDs from EXPLORE')
+        self.db.sdiffstore('EXPLORE', 'EXPLORE', 'SEEN')
+        # Logging after
+        logging.info('{0} PMIDs in Explore and {1} PMIDs in SEEN after clean'
+                     .format(self.db.scard('EXPLORE'), self.db.scard('SEEN')))
