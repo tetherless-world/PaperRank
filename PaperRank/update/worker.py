@@ -32,14 +32,15 @@ def worker(pipe: StrictPipeline, linkset: OrderedDict) -> StrictPipeline:
     in_tuples = ['("{0}","{1}")'.format(i, citation.id)
                  for i in citation.inbound]
 
+    # Saving inbound and outbound lists (even if empty)
+    pipe.hmset('OUT', {citation.id: citatoin.outbound})
+    pipe.hmset('IN', {citation.id: citation.inbound})
+
     if (len(out_tuples) + len(in_tuples)) > 0:
         # Check if inbound or outbound citations exist
 
         # Adding tuples to `GRAPH`
         pipe.sadd('GRAPH', *in_tuples, *out_tuples)
-
-        # Save outbound citations to `OUT`
-        pipe.hmset('OUT', {citation.id: citation.outbound})
 
         # Add all inbound and outbound IDs to EXPLORE
         pipe.sadd('EXPLORE',
