@@ -33,7 +33,7 @@ def worker(pipe: StrictPipeline, linkset: OrderedDict) -> StrictPipeline:
                  for i in citation.inbound]
 
     # Saving inbound and outbound lists (even if empty)
-    pipe.hmset('OUT', {citation.id: citatoin.outbound})
+    pipe.hmset('OUT', {citation.id: citation.outbound})
     pipe.hmset('IN', {citation.id: citation.inbound})
 
     if (len(out_tuples) + len(in_tuples)) > 0:
