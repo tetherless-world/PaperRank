@@ -1,4 +1,3 @@
-# from context import PaperRank
 from context import PaperRank
 from multiprocessing import Manager, Pool
 from redis import ConnectionPool, StrictRedis
