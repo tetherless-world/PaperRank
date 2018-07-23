@@ -1,5 +1,6 @@
 .DS_Store
 tmp/
+tmux.conf
 # Application folders
 .idea/
 .vscode/
