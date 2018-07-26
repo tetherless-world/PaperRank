@@ -1,1 +1,1 @@
-# PageRank computation function goes here
+# util submodule goes here
