@@ -42,8 +42,8 @@ class Manager:
         logging.info('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
 
-        # Extracting seen IDs
-        logging.info('Extracting {0} IDs from SEEN'
+        # Copying seen IDs
+        logging.info('Copying {0} IDs from SEEN'
                      .format(self.r.scard('SEEN')))
                      
         seen = np.array(list(self.r.smembers('SEEN')), dtype=np.int)
