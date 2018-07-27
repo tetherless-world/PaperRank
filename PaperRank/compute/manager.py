@@ -30,8 +30,9 @@ class Manager:
         self.N = self.r.scard('SEEN')
         self.log_increment = (self.N / 100) * self.log_increment_percent
 
-        # Building out degree map
-        buildOutDegreeMap(r=self.r)
+        # Building out degree map, if necessary
+        if self.r.hlen('OUT') != self.r.hlen('OUT_DEGREE'):
+            buildOutDegreeMap(r=self.r)
 
         # Recover from crash
         self.seen = self.__crashRecover() if recover else np.array([])
