@@ -1,5 +1,4 @@
 from .citation_abstract import CitationAbstractClass
-from ...util import Database
 from collections import OrderedDict
 import logging
 
