@@ -71,6 +71,8 @@ class TestCompute(unittest.TestCase):
         # Adding inbound citation map
         self.redis.hmset('IN', inbound_map)
 
+        # NOTE: ADD Outbound citation map (for out degree computation)
+
         # Creating redis-py connection pool
         conn_pool = ConnectionPool(
             host=self.config.test['redis']['host'],
