@@ -1,163 +1,190 @@
+from .util import buildReverseIdxMap
+from ..util import config
 from redis import StrictRedis
 from scipy import sparse
 import numpy as np
 import logging
 
 
-def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
-        -> sparse.csr_matrix:
-    """Function to construct the Stochastic matrix for the PaperRank
-    computation function. This function ensures that the columns of the
-    matrix are column stochastic (with the exception of 0 columns).
-    
-    Arguments:
-        r {StrictRedis} -- StrictRedis object for database operations.
-        seen {np.array} -- Array of IDs to be iterated over.
-
-    Returns:
-        scipy.sparse.csr_matrix -- Stochastic matrix for citation graph.
-    """
-
-    N = seen.size
-    log_increment_percent = 0.1
-    log_increment = (N / 100) * log_increment_percent
-
-    logging.info('Constructing stochastic matrix for {0} IDs'.format(N))
-
-    # Creating stochastic matrix
-    M = sparse.dok_matrix((N, N), dtype=np.float32)
-
-    # Creating sparse matrix to hold mappings from IDs to indexes
-    logging.info('Instantiating id_idx_map for {0} IDs'.format(N))
-    max_id = np.amax(seen)
-    id_idx_map = sparse.dok_matrix((max_id + 1, 1), dtype=np.int)
-    # Building ID -> Index map to allow O(1) lookup in loop
-    for i in range(N):
-        id_idx_map[seen[i], 0] = i + 1  # Note: +1 is to flag empty pointers
-    logging.info('Instantiated id_idx_map with {0} elements'
-                 .format(id_idx_map.nnz))
-
-    # counters
-    last_check = 0
-
-    logging.info('Beginning to build stochastic matrix')
-
-    # Iterating over all of the IDs
-    for i in range(N):
-        # Isolate current ID
-        paper_id = str(seen[i])
-
-        # Getting inbound citations
-        inbound_list = eval(r.hget('IN', paper_id))
-
-        # Iterate through inbound citations
-        for inbound in inbound_list:
-            # Compute position in matrix (if exists)
-            try:
-                j = __getIdIndex(id_idx_map, inbound)
-            except IndexError:
-                # If the ID is not in seen, log and skip it
-                logging.warn('Inbound citation {0} for paper {1} not indexed'
-                             .format(inbound, paper_id))
-                continue
-            # Get out degree
-            d = float(r.hget('OUT_DEGREE', inbound).decode('utf-8'))
-            d = 1.0 if d == 0.0 else d  # Change 0 to 1 to avoid division by 0
-            M[i, j] = 1 / d
+class MarkovTransitionMatrix:
+    def __init__(self, r: StrictRedis, seen: np.array,
+                 id_idx_map: sparse.dok_matrix):
+        """Initialization logic for the MarkovTransitionMatrix submodule.
         
-        # Log progress
-        last_check = __logProgress(N, log_increment, i,
-                                   last_check, 'Build stochastic matrix')
-    
-    logging.info('Built unverified stochastic matrix with {0} elements'
-                 .format(M.nnz))
+        Arguments:
+            r {StrictRedis} -- StrictRedis object for database operations.
+            seen {np.array} -- Array of IDs to be iterated over.
+            id_idx_map {sparse.dok_matrix} -- ID -> Index map with O(1) lookup.
+        """
 
-    # Converting to compressed sparse column matrix
-    M = M.tocsc()
+        # Storing input parameters
+        self.r = r
+        self.seen = seen
+        self.N = self.seen.size
+        self.id_idx_map = id_idx_map
 
-    # Ensure column stochasticity (i.e. columns sum to 1, or 0)
-    # See: https://bit.ly/2vdLqdM
+        # Logging frequency configuration
+        self.log_increment = (self.N / 100) * config.compute['log_freq']
 
-    # counters
-    last_check = 0
+    def construct(self) -> sparse.csr_matrix:
+        """Function to construct the Markov matrix for the PaperRank
+        computation function. This function ensures that the columns of the
+        matrix are column stochastic (with the exception of 0 columns).
 
-    logging.info('Beginning verification of stochastic matrix')
+        Returns:
+            scipy.sparse.csr_matrix -- Stochastic matrix for citation graph.
+        """
+        # Creating transition matrix
+        logging.info('Initializing {0}x{0} transition matrix'.format(self.N))
+        M = sparse.dok_matrix((self.N, self.N), dtype=np.float)
 
-    # Compute sums on each of the rows
-    logging.info('Computing sum of columns of M')
-    magnitudes = M.sum(axis=0)
+        # Computing unadjusted transition matrix
+        M = self.__buildUnadjustedMatrix(M)
 
-    # Iterate through each row
-    logging.info('Iterating through each row, rebalancing')
-    for i in range(N):
-        # Isolating magnitude
-        magnitude = magnitudes[0, i]
+        # Casting to sparse.csc_matrix (compressed sparse column matrix)
+        # for increased efficiency of column operations
+        M = M.tocsc()
 
-        # If criteria is satisfied, redistribute probabilities
-        if (magnitude < 1.0) and (magnitude != 0.0):
-            count = M[:, i].nnz
-            # Isolate nonzero indexes
-            nonzero_idx = M[:, i].nonzero()[0]
-            for idx in nonzero_idx:
-                M[idx, i] = 1 / count
+        # Adjusting transition matrix
+        M = self.__adjustTransitionMatrix(M)
+
+        # Casting to sparse.csr_matrix (compressed sparse row matrix)
+        # for increased efficiency of matrix/vector products
+        M = M.tocsr()
+
+        return M
+
+    def __buildUnadjustedMatrix(self, M: sparse.dok_matrix) \
+            -> sparse.dok_matrix:
+        """Function to build the unadjusted transition matrix. That is, it
+        builds a transition matrix but does not guarantee that it is
+        column stochastic.
         
-        # Log progress
-        last_check = __logProgress(N, log_increment, i,
-                                   last_check, 'Column stochasticity')
+        Returns:
+            sparse.dok_matrix -- Unadjusted Markov transition matrix.
+        """
 
-    logging.info('Built verified stochastic matrix with {0} elements'
-                 .format(M.nnz))
+        logging.info('Building unadjusted transition matrix')
 
-    # Casting to compressed sparse row matrix for
-    # fast matrix vector multiplication
-    M = M.tocsr()
+        # counter
+        last_check = 0
 
-    return M
+        for i in range(self.N):
+            # Isolate current ID
+            paper_id = str(self.seen[i])
 
+            # Getting inbound citations
+            inbound_list = eval(self.r.hget('IN', paper_id))
 
-def __getIdIndex(id_idx_map: sparse.dok_matrix, candidate_id: int) -> int:
-    """Function to get the seen array index for a given ID in O(1).
+            # Iterate throug inbound citations
+            for inbound in inbound_list:
+                # Compute position in matrix (if exists)
+                try:
+                    j = self.__getIndex(inbound)
+                except IndexError:
+                    # If the ID is not seen, log and skip it
+                    logging.warn('Inbound citation {0} for paper {1} not \
+                        indexed'.format(inbound, paper_id))
+                    continue
+
+                # Get out degree
+                d = float(self.r.hget('OUT_DEGREE', inbound).decode('utf-8'))
+                # Set d = 1 if out degree is 0, to avoid division by 0
+                d = 1.0 if d == 0.0 else d
+                
+                # Set value in transition matrix
+                M[i, j] = 1 / d
+            
+            # Log progress
+            last_check = self.__logProgress(i, last_check,
+                                            'Unadjusted transition matrix')
+
+        logging.info('Built unadjusted Markov transition matrix with {0} \
+            elements'.format(M.nnz))
+        
+        return M
     
-    Arguments:
-        id_idx_map {sparse.dok_matrix} -- ID -> Index mappings.
-        candidate_id {int} -- Candidate ID to be searched.
-    
-    Raises:
-        IndexError -- Raised when the ID is not found.
-    
-    Returns:
-        int -- Corresponding index of the ID.
-    """
+    def __adjustTransitionMatrix(self, M: sparse.csc_matrix) \
+            -> sparse.csc_matrix:
+        """Function to compute the adjusted Markov transition matrix, given the
+        unadjusted matrix. This method enforces column stochastic behavior.
+        
+        Returns:
+            sparse.csc_matrix -- Adjusted Markov transition matrix.
+        """
 
-    # Get index from map
-    idx = id_idx_map[np.int(candidate_id), 0]  # Will raise IndexError
+        logging.info('Building adjusted transition matrix')
 
-    # Empty pointer, raise exception
-    if idx == 0:
-        raise IndexError
+        # counter
+        last_check = 0
 
-    # Return idx - 1 because we added one at initialization
-    return idx - 1
+        logging.info('Computing sum of columns of M')
+        magnitues = M.sum(axis=0)
 
+        logging.info('Iterating through each column, rebalancing')
 
-def __logProgress(N: int, log_increment: float, count: int, last_check: int,
-                  iteration_name: str) -> int:
-    """Function to log the progress of the constructStochasticMatrix function.
-    
-    Arguments:
-        N {int} -- Total number of elements.
-        log_increment {float} -- Increment at which logging is done.
-        count {int} -- Current iteration count
-        last_check {int} -- Last time logging was done.
-        iteration_name {str} -- Name of the iteration to be used in log.
-    
-    Returns:
-        int -- Updated last_check
-    """
+        # Iterate through each column
+        for i in range(self.N):
+            # Isolating magnitude
+            magnitude = magnitues[0, i]
 
-    if (count - last_check) > log_increment:
-        percent_complete = round(count / N, 3) * 100
-        logging.info('{0} iteration is {1}% complete'.format(
-            iteration_name, percent_complete))
-        return count
-    return last_check
+            # If criteria are satisfied, redistribute probabilities
+            if (magnitude < 1.0) and (magnitude != 0):
+                count = M[:, i].nnz
+
+                # Isolate nonzero indezes
+                nonzero_idx = M[:, i].nonzero()[0]
+
+                # Update indexes with balanced probabilities
+                for idx in nonzero_idx:
+                    M[idx, i] = 1 / count
+        
+            # Log progress
+            last_check = self.__logProgress(i, last_check,
+                                            'Stable transition matrix')
+        
+        logging.info('Built adjusted Markov transition matrix with {0} \
+            elements'.format(M.nnz))
+        
+        return M
+
+    def __getIndex(self, candidate_id: str) -> int:
+        """Function to get the seen array index for a given ID in O(1).
+        
+        Arguments:
+            candidate_id {str} -- Candidate ID to be searched.
+        
+        Raises:
+            IndexError -- Raised when the ID is not found.
+        
+        Returns:
+            int -- Corresponding index of the ID.
+        """
+
+        # Get index from map
+        idx = self.id_idx_map[np.int(candidate_id), 0]  # Will raise IndexError
+
+        # Empty pointer, raise exception
+        if idx == 0:
+            raise IndexError
+        
+        # Return idx - 1 because we added 1 at initialization
+        return idx - 1
+
+    def __logProgress(self, count: int, last_check: int, name: str) -> int:
+        """Function to log the progress of the loops through the list of IDs.
+        
+        Arguments:
+            count {int} -- Current iteration count.
+            last_check {int} -- Last time logging was done.
+            name {str} -- Name of the iteration to be used in log.
+        
+        Returns:
+            int -- Updated last_check.
+        """
+        if (count - last_check) > self.log_increment:
+            percent_complete = round(count / self.N, 3) * 100
+            logging.info('{0} iteration is {1}% complete'
+                         .format(name, percent_complete))
+            return count
+        return last_check

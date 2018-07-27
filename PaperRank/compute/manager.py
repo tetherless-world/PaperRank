@@ -1,6 +1,6 @@
 from .paperrank import StablePaperRank
-from .util import buildOutDegreeMap, buildIdList
-from .stochastic_matrix import constructStochasticMatrix
+from .util import buildOutDegreeMap, buildIdList, buildReverseIdxMap
+from .stochastic_matrix import MarkovTransitionMatrix
 from ..util import config
 
 from redis import StrictRedis
@@ -33,9 +33,11 @@ class Manager:
         logging.info('Building out degree map')
         buildOutDegreeMap(r=self.r)
 
-        # Logging configuration
-        self.log_increment_percent = 0.5
-        self.log_increment = (self.N / 100) * self.log_increment_percent
+        # Building reverse index map for O(1) index lookup
+        self.id_idx_map = buildReverseIdxMap(seen=self.seen)
+
+        # Logging frequency configuration
+        self.log_increment = (self.N / 100) * config.compute['log_freq']
 
     def start(self):
         """Function to start the PaperRank computation.
@@ -45,7 +47,10 @@ class Manager:
         logging.info('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
         
-        M = constructStochasticMatrix(r=self.r, seen=self.seen)
+        markov_matrix = MarkovTransitionMatrix(r=self.r,
+                                               seen=self.seen,
+                                               id_idx_map=self.id_idx_map)
+        M = markov_matrix.construct()
 
         # Initializing StablePaperRank object
         compute_engine = StablePaperRank(M, self.N)
