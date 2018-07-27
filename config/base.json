@@ -12,6 +12,9 @@
         "pmid_per_request": 200,
         "request_per_second": 3
     },
+    "compute": {
+        "beta": 0.85
+    },
     "test": {
         "redis": {
             "host": "localhost",
