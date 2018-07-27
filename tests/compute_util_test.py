@@ -70,7 +70,7 @@ class TestComputeUtil(unittest.TestCase):
         # Setup test
         id_list = self.dataSetup()
 
-        m = PaperRank.compute.util.constructStochasticMatrix(
+        m = PaperRank.compute.stochastic_matrix.constructStochasticMatrix(
             r=self.redis,
             seen=id_list
         )
