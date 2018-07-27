@@ -20,7 +20,7 @@ def computeIterationScore(r: StrictRedis, id_list: np.array) -> np.array:
     N = id_list.size
     beta = config.compute['beta']
 
-    scores = np.array(dtype=float)
+    scores = np.array([], dtype=float)
 
     # Iterate through IDs
     for paper_id in id_list:
@@ -40,10 +40,10 @@ def computeIterationScore(r: StrictRedis, id_list: np.array) -> np.array:
                 logging.warn('No PaperRank for {0} inbound ID {1}. Skipping...'
                              .format(paper_id, inbound))
         # Save score to database
-        r.hset('PaperRank', {paper_id: score})
+        r.hmset('PaperRank', {paper_id: score})
 
         # Append score to score list
-        np.append(scores, score)
+        scores = np.append(scores, score)
     
     # Redistribute leaked PaperRanks (from dangling papers)
     
