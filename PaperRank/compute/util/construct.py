@@ -38,11 +38,18 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
         paper_id = seen[i]
 
         # Getting inbound citations
-        inbound_list = eval(r.hget('IN', paper_id))
+        inbound_list = np.array(eval(r.hget('IN', paper_id)), dtype=np.int)
+
         # Iterate through inbound citations
         for inbound in inbound_list:
-            # Compute position in matrix
-            j = np.where(seen == np.int(inbound))[0][0]
+            # Compute position in matrix (if exists)
+            try:
+                j = np.where(seen == inbound)[0][0]
+            except IndexError:
+                # If the ID is not in seen, log and skip it
+                logging.warn('Inbound citation {0} for paper {1} not indexed'
+                             .format(inbound, paper_id))
+                continue
             # Get out degree
             d = float(r.hget('OUT_DEGREE', inbound).decode('utf-8'))
             d = 1.0 if d == 0.0 else d  # Change 0 to 1 to avoid division by 0
