@@ -42,6 +42,17 @@ def buildIdList(r: StrictRedis, cutoff: int) -> np.array:
 
 
 def buildReverseIdxMap(seen: np.array) -> sparse.dok_matrix:
+    """Function to build a reverse map, creating a mapping from the ID of a
+    paper to its index in the seen array. This provides O(1) index lookup
+    for any given ID.
+    
+    Arguments:
+        seen {np.array} -- Array of IDs for which reverse map is computed.
+    
+    Returns:
+        sparse.dok_matrix -- ID -> Index mapping with O(1) lookup.
+    """
+
     # Isolating number of IDs
     N = seen.size
 
