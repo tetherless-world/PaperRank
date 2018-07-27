@@ -60,7 +60,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
                                    last_check, 'Build stochastic matrix')
     
     logging.info('Built unverified stochastic matrix with {0} elements'
-                 .format(m.count_nonzero()))
+                 .format(m.nnz))
 
     # Converting to compressed sparse column matrix
     m = m.tocsc()
@@ -81,7 +81,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
 
         # Change if magnitude less than 1, but not if 0
         if (magnitude < 1) and (magnitude != 0):
-            count = col.count_nonzero()
+            count = col.nnz
             new_data = np.repeat((1 / count), count)
             col.data = new_data
             m[:, j] = col
@@ -91,7 +91,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
                                    last_check, 'Column stochasticity')
 
     logging.info('Built verified stochastic matrix with {0} elements'
-                 .format(m.count_nonzero()))
+                 .format(m.nnz))
 
     # Casting to compressed sparse row matrix for
     # fast matrix vector multiplication
