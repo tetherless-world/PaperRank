@@ -1,4 +1,4 @@
-# `Compute` Module Architecture
+# `Compute` Engine Architecture
 
 ## Overview
 
