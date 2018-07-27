@@ -35,7 +35,7 @@ def buildOutDegreeMap(r: StrictRedis):
         if (count - last_check) > (out_count / 10):
             last_check = count
             logging.info('Out degree map {0}% complete'.format(
-                round(count / out_count, 3) * 10))
+                round(count / out_count, 3) * 100))
 
     logging.info('Finished building out degree map for {0} IDs'.format(
         r.hlen('OUT_DEGREE')))
