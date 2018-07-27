@@ -13,7 +13,8 @@
         "request_per_second": 3
     },
     "compute": {
-        "beta": 0.85
+        "beta": 0.85,
+        "epsilon": 0.00001
     },
     "test": {
         "redis": {
