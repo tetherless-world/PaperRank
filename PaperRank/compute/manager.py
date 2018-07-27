@@ -1,4 +1,4 @@
-from .util import buildOutDegreeMap
+from .util import buildOutDegreeMap, constructStochasticMatrix
 from .score import calculate, computeIterationScore
 from ..util import config
 
@@ -8,15 +8,12 @@ import numpy as np
 
 
 class Manager:
-    def __init__(self, r: StrictRedis, recover: bool=True):
+    def __init__(self, r: StrictRedis):
         """Manager class initialization. Loads configuration variables,
         and recovers gracefully from a crash by default.
         
         Arguments:
             r {StrictRedis} -- StrictRedis object for database operations.
-
-        Keyword Arguments:
-            recover {bool} -- True for crash recovery (default: {True}).
         """
 
         # Compute engine settings
@@ -34,9 +31,6 @@ class Manager:
         if self.r.hlen('OUT') != self.r.hlen('OUT_DEGREE'):
             buildOutDegreeMap(r=self.r)
 
-        # Recover from crash
-        self.seen = self.__crashRecover() if recover else np.array([])
-
     def start(self, cutoff: int=None):
         """Function to start the PaperRank computation.
         
@@ -48,34 +42,18 @@ class Manager:
         logging.info('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
 
+        # 
+        seen = np.array(list(self.r.smembers('SEEN')), dtype=np.int)
+        seen_sorted = np.sort(seen)[::-1]  # Sorting in ascending and reverse
+        
         if cutoff:
             logging.info('Cutoff set at {0}'.format(cutoff))
-
-        # counters
-        self.__count = 0
-        self.__last_check = 0
-
-        # Iterate through list
-        for candidate_id in reversed(range(self.id_limit)):
-            # Check if ID exists in self.seen and SEEN in Redis
-            is_id = self.r.sismember('SEEN', candidate_id)
-            is_seen = np.in1d(candidate_id, self.seen)
-
-            if is_id and not is_seen:
-                # Append to front so missed lookups are minimized
-                self.id_list = np.append(str(candidate_id), self.id_list)
-
-                # Compute PaperRank for self.id_list
-                calculate(r=self.r, id_list=self.id_list)
-
-                # Increment count, log
-                self.__count += 1
-                self.__logProgress()
-
-                # Check cutoff
-                if self.__count == cutoff:
-                    logging.info('Cutoff reached, exiting')
-                    break
+            # Isolating seen_sorted IDs
+            seen_sorted = seen_sorted[0:cutoff]
+            logging.info('Reducing PaperRank computation to {0} IDs'
+                         .format(cutoff))
+        
+        M = constructStochasticMatrix(r=self.r, seen=seen_sorted)
 
     def __logProgress(self):
         """Function to log the progress of PaperRank computation.
@@ -85,14 +63,3 @@ class Manager:
             self.__last_check = self.__count
             logging.info('PaperRank computation {0}% complete'.format(
                 round(self.__count / self.N, 3) * 100))
-
-    def __crashRecover(self) -> np.array:
-        """Function to recover from crash and build array of IDs already seen.
-        
-        Returns:
-            np.array -- Array of IDs already seen.
-        """
-
-        existing_pr = self.r.hkeys('PaperRank')
-        seen = np.array(existing_pr, dtype='int')
-        return seen
