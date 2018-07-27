@@ -1,3 +1,4 @@
+from ...util import config
 from redis import StrictRedis
 import logging
 import numpy as np
@@ -44,8 +45,9 @@ def buildOutDegreeMap(r: StrictRedis):
         r.hmset('OUT_DEGREE', out_degree)
         # Increment count
         count += 1
-        # Log every 0.5%
-        if (count - last_check) > (missing_count / 100 * 0.5):
+        # Log every increment
+        log_increment = (missing_count / 100) * config.compute['log_freq']
+        if (count - last_check) > log_increment:
             last_check = count
             logging.info('Out degree map {0}% complete'.format(
                 round(count / missing_count, 3) * 100))

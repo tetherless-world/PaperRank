@@ -37,7 +37,7 @@ def buildIdList(r: StrictRedis, cutoff: int) -> np.array:
         seen = seen[0:cutoff]
         logging.info('Reducing list list to {0} IDs from {1}'
                      .format(cutoff, seen_count))
-    
+
     return seen
 
 
@@ -45,6 +45,10 @@ def buildReverseIdxMap(seen: np.array) -> sparse.dok_matrix:
     """Function to build a reverse map, creating a mapping from the ID of a
     paper to its index in the seen array. This provides O(1) index lookup
     for any given ID.
+    
+    NOTE: Due to the fact that sparse arrays define unassigned values to be 0,
+          we have incremented every index by +1, to use 0 as a flag. Because of
+          this, -1 must be added before using these values.
     
     Arguments:
         seen {np.array} -- Array of IDs for which reverse map is computed.
@@ -71,6 +75,7 @@ def buildReverseIdxMap(seen: np.array) -> sparse.dok_matrix:
     for i in range(N):
         # i + 1 is so we can use 0 as a indicator for being empty
         # sparse.dok_matrix elements are 0 if not explicitly defined
+        # When using this value, always subtract 1 first
         id_idx_map[seen[i], 0] = i + 1
 
     logging.info('Instantiated reverse ID map with {0} elements'
