@@ -4,7 +4,7 @@ from redis import StrictRedis, ConnectionPool
 import unittest
 
 
-class TestCompute(unittest.TestCase):
+class TestComputeManager(unittest.TestCase):
     """Test the compute module with a dummy example.
     """
 

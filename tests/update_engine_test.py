@@ -5,7 +5,7 @@ from redis import ConnectionPool, StrictRedis
 import unittest
 
 
-class TestUpdate(unittest.TestCase):
+class TestUpdateEngine(unittest.TestCase):
     """Tests for the Query and Worker modules.
     """
 
