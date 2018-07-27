@@ -5,7 +5,7 @@ from redis import ConnectionPool, StrictRedis
 import unittest
 
 
-class TestQueryAndWorker(unittest.TestCase):
+class TestUpdate(unittest.TestCase):
     """Tests for the Query and Worker modules.
     """
 
@@ -31,7 +31,7 @@ class TestQueryAndWorker(unittest.TestCase):
         self.proc_count = self.m.Value('i', 0)
         self.lock = self.m.Lock()
 
-    def test_init(self):
+    def test_query_and_worker(self):
         """Test Query and Worker objects.
         """
 
