@@ -96,10 +96,15 @@ class TestComputeStochasticMatrix(unittest.TestCase):
         # Setup test
         id_list = self.dataSetup()
 
-        m = PaperRank.compute.stochastic_matrix.constructStochasticMatrix(
-            r=self.redis,
-            seen=id_list
-        )
+        # Computing id_idx_map
+        id_idx_map = PaperRank.compute.util.buildReverseIdxMap(seen=id_list)
+
+        markov_matrix = PaperRank.compute \
+            .stochastic_matrix.MarkovTransitionMatrix(r=self.redis,
+                                                      seen=id_list,
+                                                      id_idx_map=id_idx_map)
+
+        m = markov_matrix.construct()
 
         m_expected = np.matrix('0 1 .5 0; 0 0 .5 .5; 0 0 0 .5; 0 0 0 0',
                                dtype=np.float32)
