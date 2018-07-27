@@ -13,7 +13,7 @@ class TestUpdateEngine(unittest.TestCase):
         """Override initialization function to setup PaperRank config.
         """
 
-        super(TestQueryAndWorker, self).__init__(*args, **kwargs)
+        super(TestUpdateEngine, self).__init__(*args, **kwargs)
         PaperRank.util.configSetup()
         self.config = PaperRank.util.config
 

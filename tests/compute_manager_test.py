@@ -14,7 +14,7 @@ class TestComputeManager(unittest.TestCase):
         """
 
         # Running superclass initialization
-        super(TestCompute, self).__init__(*args, **kwargs)
+        super(TestComputeManager, self).__init__(*args, **kwargs)
 
         # Setting up PaperRank
         PaperRank.util.configSetup()
