@@ -31,6 +31,7 @@ pytz==2018.5
 PyYAML==3.13
 redis==2.10.6
 requests==2.19.1
+scipy==1.1.0
 six==1.11.0
 snowballstemmer==1.2.1
 sphinxcontrib-websupport==1.1.0

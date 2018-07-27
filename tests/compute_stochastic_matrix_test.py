@@ -5,13 +5,13 @@ import numpy as np
 import unittest
 
 
-class TestComputeScore(unittest.TestCase):
-    """Test the compute engine 'score' module.
+class TestComputeStochasticMatrix(unittest.TestCase):
+    """Test the compute engine `stochastic_matrix` module.
     """
 
     def __init__(self, *args, **kwargs):
         # Running superclass initialization
-        super(TestComputeScore, self).__init__(*args, **kwargs)
+        super(TestComputeStochasticMatrix, self).__init__(*args, **kwargs)
 
         # Setting up PaperRank
         PaperRank.util.configSetup()
@@ -87,67 +87,21 @@ class TestComputeScore(unittest.TestCase):
         # Running util to set up out degree map
         PaperRank.compute.util.buildOutDegreeMap(r=self.redis)
 
-        return np.array([1, 2, 3, 4], dtype=str)
+        return np.array([1, 2, 3, 4], dtype=np.int)
 
-    def test_computeIterationScore(self):
-        """Test the `computeIterationScore` function from the `score` submodule.
+    def test_constructStochasticMatrix(self):
+        """Test the functionality of the `constructStochasticMatrix` method.
         """
 
-        # Setting up test environment
+        # Setup test
         id_list = self.dataSetup()
 
-        # Running iteration compute function
-        scores = PaperRank.compute.score.computeIterationScore(
-            r=self.redis, id_list=id_list)
-        
-        # Test verification
-        # (Computing score manually)
+        m = PaperRank.compute.stochastic_matrix.constructStochasticMatrix(
+            r=self.redis,
+            seen=id_list
+        )
 
-        out_degree = {
-            1: 0,
-            2: 1,
-            3: 2,
-            4: 2
-        }
+        m_expected = np.matrix('0 1 .5 0; 0 0 .5 .5; 0 0 0 .5; 0 0 0 0',
+                               dtype=np.float32)
 
-        def manual_compute():
-            beta = self.config.compute['beta']
-            expected_scores = []
-            id_list = [1, 2, 3, 4]
-            for paper_id in id_list:
-                score = 0
-                inbound_list = self.inbound_map[paper_id]
-
-                for inbound in inbound_list:
-                    score += self.old_scores[inbound] \
-                        / out_degree[inbound] * beta
-
-                expected_scores.append(score)
-            leaked_pr = 1 - sum(expected_scores)
-
-            n = len(expected_scores)
-            expected_scores = [s + (leaked_pr / n) for s in expected_scores]
-            return expected_scores
-        
-        expected_scores = manual_compute()
-
-        self.assertListEqual(list(scores), expected_scores)
-
-    def test_computeStableScore(self):
-        """Test the `calculate` function from the `score` submodule.
-        """
-
-        # Setting up the test environment
-        id_list = self.dataSetup()
-
-        # Running stable compute function
-        PaperRank.compute.score.calculate(r=self.redis, id_list=id_list)
-
-        # Ensuring probability distribution by checking if sum is 1
-        scores_raw = self.redis.hgetall('PaperRank')
-        scores = np.array([], dtype=float)
-        for k, v in scores_raw.items():
-            scores = np.append(scores, v)
-        scores = np.array(scores).astype(np.float)
-
-        self.assertEqual(np.sum(scores), 1.0)
+        self.assertEqual(str(m.todense()), str(m_expected))
