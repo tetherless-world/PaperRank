@@ -1,5 +1,5 @@
-from .util import buildOutDegreeMap, constructStochasticMatrix
-from .score import calculate, computeIterationScore
+from .util import buildOutDegreeMap
+from .stochastic_matrix import constructStochasticMatrix
 from ..util import config
 
 from redis import StrictRedis
