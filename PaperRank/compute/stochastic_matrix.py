@@ -28,11 +28,14 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
     m = sparse.dok_matrix((N, N), dtype=np.float32)
 
     # Creating sparse matrix to hold mappings from IDs to indexes
+    logging.info('Instantiating id_idx_map for {0} IDs'.format(N))
     max_id = np.amax(seen)
     id_idx_map = sparse.dok_matrix((max_id + 1, 1), dtype=np.int)
     # Building ID -> Index map to allow O(1) lookup in loop
     for i in range(N):
-        id_idx_map[seen[i], 0] = i
+        id_idx_map[seen[i], 0] = i + 1  # Note: +1 is to flag empty pointers
+    logging.info('Instantiated id_idx_map with {0} elements'
+                 .format(id_idx_map.nnz))
 
     # counters
     last_check = 0
@@ -45,13 +48,13 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
         paper_id = str(seen[i])
 
         # Getting inbound citations
-        inbound_list = np.array(eval(r.hget('IN', paper_id)), dtype=np.int)
+        inbound_list = eval(r.hget('IN', paper_id))
 
         # Iterate through inbound citations
         for inbound in inbound_list:
             # Compute position in matrix (if exists)
             try:
-                j = id_idx_map[inbound, 0]
+                j = __getIdIndex(id_idx_map, inbound)
             except IndexError:
                 # If the ID is not in seen, log and skip it
                 logging.warn('Inbound citation {0} for paper {1} not indexed'
@@ -105,6 +108,31 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
     m = m.tocsr()
 
     return m
+
+
+def __getIdIndex(id_idx_map: sparse.dok_matrix, candidate_id: int) -> int:
+    """Function to get the seen array index for a given ID in O(1).
+    
+    Arguments:
+        id_idx_map {sparse.dok_matrix} -- ID -> Index mappings.
+        candidate_id {int} -- Candidate ID to be searched.
+    
+    Raises:
+        IndexError -- Raised when the ID is not found.
+    
+    Returns:
+        int -- Corresponding index of the ID.
+    """
+
+    # Get index from map
+    idx = id_idx_map[candidate_id, 0]  # Will raise IndexError
+
+    # Empty pointer, raise exception
+    if idx == 0:
+        raise IndexError
+
+    # Return idx - 1 because we added one at initialization
+    return idx - 1
 
 
 def __logProgress(N: int, log_increment: float, count: int, last_check: int,
