@@ -26,8 +26,10 @@ def calculate(r: StrictRedis, id_list: np.array):
     # Iterate until solution is stable
     while not stable:
         scores_new = computeIterationScore(r=r, id_list=id_list)
-        scores_old = np.copy(scores_new)
 
         # Check if the solution is stable
         difference = np.sum(np.absolute(scores_new - scores_old))
         stable = difference < epsilon
+
+        # Update scores_old
+        scores_old = np.copy(scores_new)

@@ -32,8 +32,10 @@ def computeIterationScore(r: StrictRedis, id_list: np.array) -> np.array:
             # Check if paperrank exists for inbound ID
             if r.hexists('PaperRank', inbound):
                 # Getting PaperRank in outbound degree of inbound
-                inbound_pr = float(r.hget('PaperRank', inbound))
-                inbound_outdeg = float(r.hget('OUT_DEGREE', inbound))
+                inbound_pr = float(r.hget(
+                    'PaperRank', inbound).decode('utf-8'))
+                inbound_outdeg = float(r.hget(
+                    'OUT_DEGREE', inbound).decode('utf-8'))
                 # Add to score
                 score += (beta * (inbound_pr / inbound_outdeg))
             else:
@@ -48,8 +50,16 @@ def computeIterationScore(r: StrictRedis, id_list: np.array) -> np.array:
     # Redistribute leaked PaperRanks (from dangling papers)
     
     leaked_pr = 1 - np.sum(scores)
+    adjustment = leaked_pr / N
 
     if leaked_pr > 0:
-        scores = scores + (leaked_pr / N)
-    
+        # Updating scores vector
+        scores = scores + adjustment
+        # Updating database scores
+        for paper_id in id_list:
+            score_unadjusted = float(r.hget(
+                'PaperRank', paper_id).decode('utf-8'))
+            score_adjusted = score_unadjusted + adjustment
+            r.hmset('PaperRank', {paper_id: score_adjusted})
+
     return scores
