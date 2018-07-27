@@ -1,6 +1,6 @@
 {
     "redis": {
-        "host": "localhost"
+        "host": "test"
     },
     "ncbi_api": {
         "email": "test@test.com"
