@@ -96,7 +96,8 @@ class TestComputeManager(unittest.TestCase):
 
         # Setting up test environment
         id_list = self.dataSetup()
-        
+        # Reducing id_limit for test
+        self.config.compute['id_limit'] = 10
         # Run PaperRank compute
         compute_manager = PaperRank.compute.Manager(r=self.redis)
         compute_manager.start()
