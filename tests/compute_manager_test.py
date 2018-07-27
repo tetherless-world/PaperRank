@@ -5,7 +5,7 @@ import unittest
 
 
 class TestComputeManager(unittest.TestCase):
-    """Test the compute module with a dummy example.
+    """Test the compute engine `Manager` module with a dummy example.
     """
 
     def __init__(self, *args, **kwargs):
@@ -26,9 +26,6 @@ class TestComputeManager(unittest.TestCase):
             port=self.config.test['redis']['port'],
             db=self.config.test['redis']['db']
         )
-
-        # Flush db, set up example
-        self.redis.flushdb()
 
     def test_computeModel(self):
         """Test the compute module by computing PageRakn for a sample testcase.
@@ -55,6 +52,9 @@ class TestComputeManager(unittest.TestCase):
             - [4] -> .1142857114
         
         """
+
+        # Flush database
+        self.redis.flushdb()
 
         pages = [1, 2, 3, 4]
 
