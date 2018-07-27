@@ -37,6 +37,8 @@ def computeIterationScore(r: StrictRedis, id_list: np.array) -> np.array:
                     'PaperRank', inbound).decode('utf-8'))
                 inbound_outdeg = float(r.hget(
                     'OUT_DEGREE', inbound).decode('utf-8'))
+                if inbound_outdeg = 0:
+                    inbound_outdeg = 1
                 # Add to score
                 score += (beta * (inbound_pr / inbound_outdeg))
             else:
