@@ -1,6 +1,6 @@
 from .paperrank import StablePaperRank
 from .util import buildOutDegreeMap, buildIdList, buildReverseIdxMap
-from .stochastic_matrix import MarkovTransitionMatrix
+from .transition_matrix import MarkovTransitionMatrix
 from ..util import config
 
 from redis import StrictRedis

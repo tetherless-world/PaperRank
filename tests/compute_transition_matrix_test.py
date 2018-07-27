@@ -5,13 +5,13 @@ import numpy as np
 import unittest
 
 
-class TestComputeStochasticMatrix(unittest.TestCase):
+class TestComputeTransitionMatrix(unittest.TestCase):
     """Test the compute engine `stochastic_matrix` module.
     """
 
     def __init__(self, *args, **kwargs):
         # Running superclass initialization
-        super(TestComputeStochasticMatrix, self).__init__(*args, **kwargs)
+        super(TestComputeTransitionMatrix, self).__init__(*args, **kwargs)
 
         # Setting up PaperRank
         PaperRank.util.configSetup()
@@ -89,7 +89,7 @@ class TestComputeStochasticMatrix(unittest.TestCase):
 
         return np.array([1, 2, 3, 4], dtype=np.int)
 
-    def test_constructStochasticMatrix(self):
+    def test_constructTransitionMatrix(self):
         """Test the functionality of the `constructStochasticMatrix` method.
         """
 
@@ -100,7 +100,7 @@ class TestComputeStochasticMatrix(unittest.TestCase):
         id_idx_map = PaperRank.compute.util.buildReverseIdxMap(seen=id_list)
 
         markov_matrix = PaperRank.compute \
-            .stochastic_matrix.MarkovTransitionMatrix(r=self.redis,
+            .transition_matrix.MarkovTransitionMatrix(r=self.redis,
                                                       seen=id_list,
                                                       id_idx_map=id_idx_map)
 
