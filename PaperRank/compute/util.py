@@ -31,8 +31,8 @@ def buildOutDegreeMap(r: StrictRedis):
         r.hmset('OUT_DEGREE', out_degree)
         # Increment count
         count += 1
-        # Log every ~10%
-        if (count - last_check) > (out_count / 10):
+        # Log every 0.5%
+        if (count - last_check) > (out_count / 100 * 0.5):
             last_check = count
             logging.info('Out degree map {0}% complete'.format(
                 round(count / out_count, 3) * 100))
