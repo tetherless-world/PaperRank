@@ -1,3 +1,4 @@
+from .paperrank import calculateStablePaperRank
 from .util import buildOutDegreeMap
 from .stochastic_matrix import constructStochasticMatrix
 from ..util import config
@@ -59,6 +60,10 @@ class Manager:
                          .format(cutoff))
         
         M = constructStochasticMatrix(r=self.r, seen=seen_sorted)
+
+        paperrank = calculateStablePaperRank(M, self.N)
+
+        return paperrank
 
     def __logProgress(self):
         """Function to log the progress of PaperRank computation.
