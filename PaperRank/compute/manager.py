@@ -79,6 +79,8 @@ class Manager:
 
         seen_ids = np.array(list(self.r.smembers('SEEN')), dtype=int)
         seen_ids_sorted = np.array(np.sort(seen_ids)[::-1], dtype=str)
+        if cutoff:
+            seen_ids_sorted = seen_ids_sorted[0:cutoff]
         computeIterationScore(r=self.r, id_list=seen_ids_sorted)
         calculate(r=self.r, id_list=seen_ids_sorted)
 
