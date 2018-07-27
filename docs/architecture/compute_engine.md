@@ -80,7 +80,8 @@ for id in id_list:
     inbound_list = db.get_inbound(id)
 
     for inbound in inbound_list:
-        if inbound in db.pr_list:  # Skip if not iterated yet, used in place of recursive call
+        # Skip if not iterated yet, used in place of recursive call
+        if inbound in db.pr_list:
             pr_id += beta * (db.get_pr(inbound) / db.get_outdegree(inbound))
 
     db.set_pr(id, pr_id)  # Save to db
