@@ -32,9 +32,10 @@ def worker(pipe: StrictPipeline, linkset: OrderedDict) -> StrictPipeline:
     in_tuples = ['("{0}","{1}")'.format(i, citation.id)
                  for i in citation.inbound]
 
-    # Saving inbound and outbound lists (even if empty)
+    # Saving inbound, outbound lists and outbound degree (even if empty)
     pipe.hmset('OUT', {citation.id: citation.outbound})
     pipe.hmset('IN', {citation.id: citation.inbound})
+    pipe.hmset('OUT_DEGREE', {citation.id: len(citation.outbound)})
 
     if (len(out_tuples) + len(in_tuples)) > 0:
         # Check if inbound or outbound citations exist
