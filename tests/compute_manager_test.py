@@ -1,5 +1,7 @@
 from context import PaperRank
+
 from redis import StrictRedis, ConnectionPool
+import numpy as np
 
 import unittest
 
@@ -17,7 +19,7 @@ class TestComputeManager(unittest.TestCase):
         super(TestComputeManager, self).__init__(*args, **kwargs)
 
         # Setting up PaperRank
-        PaperRank.util.configSetup()
+        PaperRank.util.configSetup(override='test.json')
         self.config = PaperRank.util.config
 
         # Connecting to redis
@@ -27,59 +29,78 @@ class TestComputeManager(unittest.TestCase):
             db=self.config.test['redis']['db']
         )
 
-    def test_compute_manager(self):
-        """Test the `Manager` by computing PaperRank for a sample testcase.
-
-        The test case computes PageRank for the graph with the structure:
-
-        - Graphical graph representation:
-                 [2] <--- [4]
-                /  ▲      /
-               /    \    /
-              ▼      \  ▼
-             [1] <--- [3]
-    
-        - `IN` database mappings:
-            - {1: [2, 3]}    (new)
-            - {2: [3, 4]}      |
-            - {3: [4]}         |
-            - {4: []}         old
+    def dataSetup(self) -> np.array:
+        """Function to setup the test case described below.
         
-        - Solution (stable):
-            - [1] -> .4571428855
-            - [2] -> .2571428458
-            - [3] -> .1714285572
-            - [4] -> .1142857114
-        
+            The test case is the following sample citation graph:
+
+            - Graphical graph representation:
+            
+                      [2] <--- [4]
+                     /  ▲      /
+                    /    \    /
+                   ▼      \  ▼
+                  [1] <--- [3]
+
+            - `IN` database mappings:
+                - {1: [2, 3]}    (new)
+                - {2: [3, 4]}      |
+                - {3: [4]}         |
+                - {4: []}        (old)
+            
+            - `OUT` database mappings:
+                - {1: []}
+                - {2: [1]}
+                - {3: [1, 2]}
+                - {4: [2, 3]}
+            
+            - Artificial PaperRanks (inserted)
+                - {2: .5}
+                - {3: .25}
+                - {4: .25}
+
+
+        Returns:
+            np.array -- Array of IDs.
         """
 
-        # Flush database
+        # Flush db
         self.redis.flushdb()
 
-        pages = [1, 2, 3, 4]
-
-        inbound_map = {
+        # Setting up sample data
+        self.inbound_map = {
             1: [2, 3],
             2: [3, 4],
             3: [4],
             4: []
         }
+        self.redis.hmset('IN', self.inbound_map)
+        outbound_map = {
+            1: [],
+            2: [1],
+            3: [1, 2],
+            4: [2, 3]
+        }
+        self.redis.hmset('OUT', outbound_map)
+        seen = [1, 2, 3, 4]
+        self.redis.sadd('SEEN', *seen)
 
-        # Adding pages to `SEEN`
-        self.redis.sadd('SEEN', *[1, 2, 3, 4])
+        # Running util to set up out degree map
+        PaperRank.compute.util.buildOutDegreeMap(r=self.redis)
 
-        # Adding inbound citation map
-        self.redis.hmset('IN', inbound_map)
+        return np.array([1, 2, 3, 4], dtype=str)
 
-        # NOTE: ADD Outbound citation map (for out degree computation)
+    def test_compute_manager(self):
+        """Test the `Manager` by computing PaperRank for a sample testcase.
+        """
 
-        # Creating redis-py connection pool
-        conn_pool = ConnectionPool(
-            host=self.config.test['redis']['host'],
-            port=self.config.test['redis']['port'],
-            db=self.config.test['redis']['db']
-        )
-
+        # Setting up test environment
+        id_list = self.dataSetup()
+        
         # Run PaperRank compute
+        compute_manager = PaperRank.compute.Manager(r=self.redis)
+        compute_manager.start()
 
-        self.assertTrue(True)  # Temporary
+        # Checking if 4 PaperRanks exist
+        paperrank_count = self.redis.hlen('PaperRank')
+        self.assertEqual(paperrank_count, 4)
