@@ -27,6 +27,13 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
     # Creating stochastic matrix
     m = sparse.dok_matrix((N, N), dtype=np.float32)
 
+    # Creating sparse matrix to hold mappings from IDs to indexes
+    max_id = np.amax(seen)
+    id_idx_map = sparse.dok_matrix((max_id + 1, 1), dtype=np.int)
+    # Building ID -> Index map to allow O(1) lookup in loop
+    for i in range(N):
+        id_idx_map[seen[i], 0] = i
+
     # counters
     last_check = 0
 
@@ -35,7 +42,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
     # Iterating over all of the IDs
     for i in range(N):
         # Isolate current ID
-        paper_id = seen[i]
+        paper_id = str(seen[i])
 
         # Getting inbound citations
         inbound_list = np.array(eval(r.hget('IN', paper_id)), dtype=np.int)
@@ -44,7 +51,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
         for inbound in inbound_list:
             # Compute position in matrix (if exists)
             try:
-                j = np.where(seen == inbound)[0][0]
+                j = id_idx_map[inbound, 0]
             except IndexError:
                 # If the ID is not in seen, log and skip it
                 logging.warn('Inbound citation {0} for paper {1} not indexed'

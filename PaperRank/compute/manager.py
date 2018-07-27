@@ -17,19 +17,15 @@ class Manager:
         """
 
         # Compute engine settings
-        self.id_limit = config.compute['id_limit']  # ID to count down from
-
         self.log_increment_percent = 0.5
 
         # Class variables
         self.r = r
-        self.id_list = np.array([], dtype=str)
         self.N = self.r.scard('SEEN')
         self.log_increment = (self.N / 100) * self.log_increment_percent
 
-        # Building out degree map, if necessary
-        if self.r.hlen('OUT') != self.r.hlen('OUT_DEGREE'):
-            buildOutDegreeMap(r=self.r)
+        # Building out degree map
+        buildOutDegreeMap(r=self.r)
 
     def start(self, cutoff: int=None):
         """Function to start the PaperRank computation.
