@@ -20,7 +20,8 @@ class Manager:
         """
 
         # Compute engine settings
-        self.id_limit = 100000000  # ID to count down from
+        self.id_limit = config.compute['id_limit']  # ID to count down from
+
         self.log_increment_percent = 0.5
 
         # Class variables
@@ -44,10 +45,14 @@ class Manager:
 
         # Startup
         logging.info('Starting PaperRank computation for {0} IDs'
-                     .format(count))
+                     .format(self.N))
 
         if cutoff:
             logging.info('Cutoff set at {0}'.format(cutoff))
+
+        # counters
+        self.__count = 0
+        self.__last_check = 0
 
         # Iterate through list
         for candidate_id in reversed(range(self.id_limit)):
@@ -75,10 +80,10 @@ class Manager:
         """Function to log the progress of PaperRank computation.
         """
 
-        if (self.count - self.last_check) > self.log_increment:
-            self.last_check = self.count
+        if (self.__count - self.__last_check) > self.log_increment:
+            self.__last_check = self.__count
             logging.info('PaperRank computation {0}% complete'.format(
-                round(count / self.N, 3) * 100))
+                round(self.__count / self.N, 3) * 100))
 
     def __crashRecover(self) -> np.array:
         """Function to recover from crash and build array of IDs already seen.
