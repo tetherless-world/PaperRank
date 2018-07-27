@@ -24,7 +24,10 @@ class Manager:
         self.N = self.r.scard('SEEN')
         self.log_increment = (self.N / 100) * self.log_increment_percent
 
+        logging.info('Initializing with {0} IDs in SEEN'.format(self.N))
+
         # Building out degree map
+        logging.info('Building out degree map')
         buildOutDegreeMap(r=self.r)
 
     def start(self, cutoff: int=None):

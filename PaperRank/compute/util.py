@@ -13,8 +13,12 @@ def buildOutDegreeMap(r: StrictRedis):
 
     # Check if out degree map refresh is necessary, if not return
     if r.hlen('OUT') == r.hlen('OUT_DEGREE'):
+        logging.info('No difference found between OUT and OUT_DEGREE')
         return
 
+    logging.info('Difference found between OUT and OUT_DEGREE, building map')
+
+    logging.info('Copying OUT and OUT_DEGREE keys for comparison')
     # Get list of elements in OUT and OUT_DEGREE
     out_list = [i.decode('utf-8') for i in r.hkeys('OUT')]
     outdeg_list = [i.decode('utf-8') for i in r.hkeys('OUT_DEGREE')]
