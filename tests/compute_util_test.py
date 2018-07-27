@@ -67,7 +67,7 @@ class TestComputeUtil(unittest.TestCase):
 
         m = PaperRank.compute.util.constructStochasticMatrix(
             r=self.redis,
-            seen_sorted=id_list
+            seen=id_list
         )
 
         m_expected = np.matrix('0 1 .5 0; 0 0 .5 .5; 0 0 0 .5; 0 0 0 0',
