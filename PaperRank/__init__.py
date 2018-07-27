@@ -1,3 +1,4 @@
 # Imports
-from . import util
+from . import compute
 from . import update
+from . import util
