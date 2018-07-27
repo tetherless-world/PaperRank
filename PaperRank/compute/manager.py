@@ -17,7 +17,7 @@ class Manager:
             r {StrictRedis} -- StrictRedis object for database operations.
         
         Keyword Arguments:
-            cutoff {int} -- Optional iteration cutoff. (default: {None})
+            cutoff {int} -- ID number limit. (default: {None})
         """
 
         # Class variables
