@@ -56,6 +56,8 @@ class Manager:
             logging.info('Cutoff set at {0}'.format(cutoff))
             # Isolating seen_sorted IDs
             seen_sorted = seen_sorted[0:cutoff]
+            # Updating self.N
+            self.N = seen_sorted.size
             logging.info('Reducing PaperRank computation to {0} IDs'
                          .format(cutoff))
         
