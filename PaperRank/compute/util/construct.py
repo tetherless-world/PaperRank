@@ -4,19 +4,25 @@ import numpy as np
 import logging
 
 
-def constructStochasticMatrix(r: StrictRedis, seen_sorted: np.array) \
+def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
         -> sparse.csr_matrix:
     """Function to construct the Stochastic matrix for the PaperRank
     computation function. This function ensures that the columns of the
     matrix are column stochastic (with the exception of 0 columns).
     
+    Arguments:
+        r {StrictRedis} -- StrictRedis object for database operations.
+        seen {np.array} -- Array of IDs to be iterated over.
+
     Returns:
         scipy.sparse.csr_matrix -- Stochastic matrix for citation graph.
     """
 
-    N = seen_sorted.size
+    N = seen.size
     log_increment_percent = 0.1
     log_increment = (N / 100) * log_increment_percent
+
+    logging.info('Constructing stochastic matrix for {0} IDs'.format(N))
 
     # Creating stochastic matrix
     m = sparse.dok_matrix((N, N), dtype=np.float32)
@@ -24,17 +30,19 @@ def constructStochasticMatrix(r: StrictRedis, seen_sorted: np.array) \
     # counters
     last_check = 0
 
+    logging.info('Beginning to build stochastic matrix')
+
     # Iterating over all of the IDs
     for i in range(N):
         # Isolate current ID
-        paper_id = seen_sorted[i]
+        paper_id = seen[i]
 
         # Getting inbound citations
         inbound_list = eval(r.hget('IN', paper_id))
         # Iterate through inbound citations
         for inbound in inbound_list:
             # Compute position in matrix
-            j = np.where(seen_sorted == inbound)[0][0]
+            j = np.where(seen == inbound)[0][0]
             # Get out degree
             d = float(r.hget('OUT_DEGREE', inbound).decode('utf-8'))
             d = 1 if d == 0 else d  # Change 0 to 1 to avoid division by 0
@@ -43,6 +51,10 @@ def constructStochasticMatrix(r: StrictRedis, seen_sorted: np.array) \
         # Log progress
         last_check = __logProgress(N, log_increment, i,
                                    last_check, 'Build stochastic matrix')
+    
+    logging.info('Built unverified stochastic matrix with {0} elements'
+                 .format(m.count_nonzero()))
+
     # Converting to compressed sparse column matrix
     m = m.tocsc()
 
@@ -51,6 +63,8 @@ def constructStochasticMatrix(r: StrictRedis, seen_sorted: np.array) \
 
     # counters
     last_check = 0
+
+    logging.info('Beginning verification of stochastic matrix')
 
     # Iterate through columns
     for j in range(N):
@@ -68,6 +82,9 @@ def constructStochasticMatrix(r: StrictRedis, seen_sorted: np.array) \
         # Log progress
         last_check = __logProgress(N, log_increment, j,
                                    last_check, 'Column stochasticity')
+
+    logging.info('Built verified stochastic matrix with {0} elements'
+                 .format(m.count_nonzero()))
 
     # Casting to compressed sparse row matrix for
     # fast matrix vector multiplication
