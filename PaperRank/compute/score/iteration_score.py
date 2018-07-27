@@ -1,5 +1,6 @@
 from ...util import config
 from redis import StrictRedis
+import logging
 import numpy as np
 
 
