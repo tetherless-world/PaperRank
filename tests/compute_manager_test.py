@@ -27,8 +27,8 @@ class TestComputeManager(unittest.TestCase):
             db=self.config.test['redis']['db']
         )
 
-    def test_computeModel(self):
-        """Test the compute module by computing PageRakn for a sample testcase.
+    def test_compute_manager(self):
+        """Test the `Manager` by computing PaperRank for a sample testcase.
 
         The test case computes PageRank for the graph with the structure:
 
