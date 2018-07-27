@@ -42,10 +42,16 @@ class Manager:
         logging.info('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
 
-        # 
+        # Extracting seen IDs
+        logging.info('Extracting {0} IDs from SEEN'
+                     .format(self.r.scard('SEEN')))
+                     
         seen = np.array(list(self.r.smembers('SEEN')), dtype=np.int)
         seen_sorted = np.sort(seen)[::-1]  # Sorting in ascending and reverse
         
+        logging.info('Successfully extracted and sorted {0} IDs from SEEN'
+                     .format(seen_sorted.size))
+
         if cutoff:
             logging.info('Cutoff set at {0}'.format(cutoff))
             # Isolating seen_sorted IDs

@@ -45,7 +45,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
             j = np.where(seen == inbound)[0][0]
             # Get out degree
             d = float(r.hget('OUT_DEGREE', inbound).decode('utf-8'))
-            d = 1 if d == 0 else d  # Change 0 to 1 to avoid division by 0
+            d = 1.0 if d == 0.0 else d  # Change 0 to 1 to avoid division by 0
             m[i, j] = 1 / d
         
         # Log progress
@@ -70,7 +70,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
     for j in range(N):
         # Isolate column, compute magnitude
         col = m.getcol(j)
-        magnitude = sum(col)
+        magnitude = np.sum(col.data)
 
         # Change if magnitude less than 1, but not if 0
         if (magnitude < 1) and (magnitude != 0):
