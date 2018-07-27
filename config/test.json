@@ -1,8 +1,11 @@
 {
     "redis": {
-        "host": "test"
+        "host": "localhost"
     },
     "ncbi_api": {
         "email": "test@test.com"
+    },
+    "compute": {
+        "id_limit": 10
     }
 }
