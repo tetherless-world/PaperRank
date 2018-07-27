@@ -42,7 +42,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
         # Iterate through inbound citations
         for inbound in inbound_list:
             # Compute position in matrix
-            j = np.where(seen == inbound)[0][0]
+            j = np.where(seen == np.int(inbound))[0][0]
             # Get out degree
             d = float(r.hget('OUT_DEGREE', inbound).decode('utf-8'))
             d = 1.0 if d == 0.0 else d  # Change 0 to 1 to avoid division by 0
