@@ -55,34 +55,27 @@ class Manager:
         self.__count = 0
         self.__last_check = 0
 
-        # # Iterate through list
-        # for candidate_id in reversed(range(self.id_limit)):
-        #     # Check if ID exists in self.seen and SEEN in Redis
-        #     is_id = self.r.sismember('SEEN', candidate_id)
-        #     is_seen = np.in1d(candidate_id, self.seen)
+        # Iterate through list
+        for candidate_id in reversed(range(self.id_limit)):
+            # Check if ID exists in self.seen and SEEN in Redis
+            is_id = self.r.sismember('SEEN', candidate_id)
+            is_seen = np.in1d(candidate_id, self.seen)
 
-        #     if is_id and not is_seen:
-        #         # Append to front so missed lookups are minimized
-        #         self.id_list = np.append(str(candidate_id), self.id_list)
+            if is_id and not is_seen:
+                # Append to front so missed lookups are minimized
+                self.id_list = np.append(str(candidate_id), self.id_list)
 
-        #         # Compute PaperRank for self.id_list
-        #         calculate(r=self.r, id_list=self.id_list)
+                # Compute PaperRank for self.id_list
+                calculate(r=self.r, id_list=self.id_list)
 
-        #         # Increment count, log
-        #         self.__count += 1
-        #         self.__logProgress()
+                # Increment count, log
+                self.__count += 1
+                self.__logProgress()
 
-        #         # Check cutoff
-        #         if self.__count == cutoff:
-        #             logging.info('Cutoff reached, exiting')
-        #             break
-
-        seen_ids = np.array(list(self.r.smembers('SEEN')), dtype=int)
-        seen_ids_sorted = np.array(np.sort(seen_ids)[::-1], dtype=str)
-        if cutoff:
-            seen_ids_sorted = seen_ids_sorted[0:cutoff]
-        computeIterationScore(r=self.r, id_list=seen_ids_sorted)
-        calculate(r=self.r, id_list=seen_ids_sorted)
+                # Check cutoff
+                if self.__count == cutoff:
+                    logging.info('Cutoff reached, exiting')
+                    break
 
     def __logProgress(self):
         """Function to log the progress of PaperRank computation.
