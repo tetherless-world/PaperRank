@@ -50,4 +50,5 @@ manager = PaperRank.compute.Manager(r=r)
 
 paperrank = manager.start(cutoff=1000000)
 
-np.savetxt('paperrank.csv', paperrank, delimiter=',')
+with open('paperrank.csv', 'w') as f:
+    np.savetxt('paperrank.csv', paperrank, delimiter=',', fmt='%.15f')
