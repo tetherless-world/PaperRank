@@ -25,7 +25,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
     logging.info('Constructing stochastic matrix for {0} IDs'.format(N))
 
     # Creating stochastic matrix
-    m = sparse.dok_matrix((N, N), dtype=np.float32)
+    M = sparse.dok_matrix((N, N), dtype=np.float32)
 
     # Creating sparse matrix to hold mappings from IDs to indexes
     logging.info('Instantiating id_idx_map for {0} IDs'.format(N))
@@ -63,17 +63,17 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
             # Get out degree
             d = float(r.hget('OUT_DEGREE', inbound).decode('utf-8'))
             d = 1.0 if d == 0.0 else d  # Change 0 to 1 to avoid division by 0
-            m[i, j] = 1 / d
+            M[i, j] = 1 / d
         
         # Log progress
         last_check = __logProgress(N, log_increment, i,
                                    last_check, 'Build stochastic matrix')
     
     logging.info('Built unverified stochastic matrix with {0} elements'
-                 .format(m.nnz))
+                 .format(M.nnz))
 
     # Converting to compressed sparse column matrix
-    m = m.tocsc()
+    M = M.tocsc()
 
     # Ensure column stochasticity (i.e. columns sum to 1, or 0)
     # See: https://bit.ly/2vdLqdM
@@ -83,31 +83,31 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
 
     logging.info('Beginning verification of stochastic matrix')
 
-    # Iterate through columns
-    for j in range(N):
-        # Isolate column, compute magnitude
-        col = m.getcol(j)
-        magnitude = np.sum(col.data)
+    # Compute sums on each of the rows
+    magnitudes = M.sum(axis=0)
 
-        # Change if magnitude less than 1, but not if 0
-        if (magnitude < 1) and (magnitude != 0):
-            count = col.nnz
-            new_data = np.repeat((1 / count), count)
-            col.data = new_data
-            m[:, j] = col
+    # Iterate through each row
+    for i in range(N):
+        magnitude = magnitudes[0, i]
+        if (magnitude < 1.0) and (magnitude != 0.0):
+            # If criteria is satisfied, redistribute probabilities
+            count = M[:, i].nnz
+            nonzero_idx = M[:, i].nonzero()[0]
+            for idx in nonzero_idx:
+                M[idx, i] = 1 / count
         
         # Log progress
         last_check = __logProgress(N, log_increment, j,
                                    last_check, 'Column stochasticity')
 
     logging.info('Built verified stochastic matrix with {0} elements'
-                 .format(m.nnz))
+                 .format(M.nnz))
 
     # Casting to compressed sparse row matrix for
     # fast matrix vector multiplication
-    m = m.tocsr()
+    M = M.tocsr()
 
-    return m
+    return M
 
 
 def __getIdIndex(id_idx_map: sparse.dok_matrix, candidate_id: int) -> int:
