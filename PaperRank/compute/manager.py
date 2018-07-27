@@ -63,6 +63,8 @@ class Manager:
 
         paperrank = calculateStablePaperRank(M, self.N)
 
+        logging.info('Computed PaperRanks for {0} IDs'.format(self.N))
+
         return paperrank
 
     def __logProgress(self):

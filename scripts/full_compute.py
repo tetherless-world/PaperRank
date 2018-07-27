@@ -1,5 +1,6 @@
 from context import PaperRank
 import logging
+import numpy as np
 import redis
 import sys
 
@@ -47,4 +48,6 @@ r = redis.StrictRedis(
 # Creating manager
 manager = PaperRank.compute.Manager(r=r)
 
-manager.start(cutoff=100)
+paperrank = manager.start(cutoff=1000000)
+
+np.savetxt('paperrank.csv', paperrank, delimiter=',')
