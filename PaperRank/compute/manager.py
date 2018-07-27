@@ -1,4 +1,4 @@
-from .paperrank import calculateStablePaperRank
+from .paperrank import StablePaperRank
 from .util import buildOutDegreeMap
 from .stochastic_matrix import constructStochasticMatrix
 from ..util import config
@@ -63,7 +63,9 @@ class Manager:
         
         M = constructStochasticMatrix(r=self.r, seen=seen_sorted)
 
-        paperrank = calculateStablePaperRank(M, self.N)
+        # Initializing StablePaperRank object
+        compute_engine = StablePaperRank(M, self.N)
+        paperrank = compute_engine.calculate()
 
         logging.info('Computed PaperRanks for {0} IDs'.format(self.N))
 
