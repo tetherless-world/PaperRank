@@ -1,4 +1,4 @@
-# `Compute` Module Notes
+# `Compute` Module Architecture
 
 ## Overview
 
