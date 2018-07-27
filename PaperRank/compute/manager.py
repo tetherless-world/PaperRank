@@ -1,5 +1,5 @@
 from .paperrank import StablePaperRank
-from .util import buildOutDegreeMap
+from .util import buildOutDegreeMap, buildIdList
 from .stochastic_matrix import constructStochasticMatrix
 from ..util import config
 
@@ -9,73 +9,49 @@ import numpy as np
 
 
 class Manager:
-    def __init__(self, r: StrictRedis):
+    def __init__(self, r: StrictRedis, cutoff: int=None):
         """Manager class initialization. Loads configuration variables,
         and recovers gracefully from a crash by default.
         
         Arguments:
             r {StrictRedis} -- StrictRedis object for database operations.
-        """
-
-        # Compute engine settings
-        self.log_increment_percent = 0.5
-
-        # Class variables
-        self.r = r
-        self.N = self.r.scard('SEEN')
-        self.log_increment = (self.N / 100) * self.log_increment_percent
-
-        logging.info('Initializing with {0} IDs in SEEN'.format(self.N))
-
-        # Building out degree map
-        logging.info('Building out degree map')
-        buildOutDegreeMap(r=self.r)
-
-    def start(self, cutoff: int=None):
-        """Function to start the PaperRank computation.
         
         Keyword Arguments:
             cutoff {int} -- Optional iteration cutoff. (default: {None})
         """
 
+        # Class variables
+        self.r = r
+
+        # Intializing SEEN ID list
+        logging.info('Initializing with {0} IDs in SEEN'
+                     .format(r.scard('SEEN')))
+        self.seen = buildIdList(r=self.r, cutoff=cutoff)
+        self.N = self.seen.size
+
+        # Building out degree map
+        logging.info('Building out degree map')
+        buildOutDegreeMap(r=self.r)
+
+        # Logging configuration
+        self.log_increment_percent = 0.5
+        self.log_increment = (self.N / 100) * self.log_increment_percent
+
+    def start(self):
+        """Function to start the PaperRank computation.
+        """
+
         # Startup
         logging.info('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
-
-        # Copying seen IDs
-        logging.info('Copying {0} IDs from SEEN'
-                     .format(self.r.scard('SEEN')))
-                     
-        seen = np.array(list(self.r.smembers('SEEN')), dtype=np.int)
-        seen_sorted = np.sort(seen)[::-1]  # Sorting in ascending and reverse
         
-        logging.info('Successfully extracted and sorted {0} IDs from SEEN'
-                     .format(seen_sorted.size))
-
-        if cutoff:
-            logging.info('Cutoff set at {0}'.format(cutoff))
-            # Isolating seen_sorted IDs
-            seen_sorted = seen_sorted[0:cutoff]
-            # Updating self.N
-            self.N = seen_sorted.size
-            logging.info('Reducing PaperRank computation to {0} IDs'
-                         .format(cutoff))
-        
-        M = constructStochasticMatrix(r=self.r, seen=seen_sorted)
+        M = constructStochasticMatrix(r=self.r, seen=self.seen)
 
         # Initializing StablePaperRank object
         compute_engine = StablePaperRank(M, self.N)
+        # Computing PaperRanks
         paperrank = compute_engine.calculate()
 
         logging.info('Computed PaperRanks for {0} IDs'.format(self.N))
 
         return paperrank
-
-    def __logProgress(self):
-        """Function to log the progress of PaperRank computation.
-        """
-
-        if (self.__count - self.__last_check) > self.log_increment:
-            self.__last_check = self.__count
-            logging.info('PaperRank computation {0}% complete'.format(
-                round(self.__count / self.N, 3) * 100))
