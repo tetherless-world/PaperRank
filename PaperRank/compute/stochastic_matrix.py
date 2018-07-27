@@ -84,14 +84,19 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
     logging.info('Beginning verification of stochastic matrix')
 
     # Compute sums on each of the rows
+    logging.info('Computing sum of columns of M')
     magnitudes = M.sum(axis=0)
 
     # Iterate through each row
+    logging.info('Iterating through each row, rebalancing')
     for i in range(N):
+        # Isolating magnitude
         magnitude = magnitudes[0, i]
+
+        # If criteria is satisfied, redistribute probabilities
         if (magnitude < 1.0) and (magnitude != 0.0):
-            # If criteria is satisfied, redistribute probabilities
             count = M[:, i].nnz
+            # Isolate nonzero indexes
             nonzero_idx = M[:, i].nonzero()[0]
             for idx in nonzero_idx:
                 M[idx, i] = 1 / count
