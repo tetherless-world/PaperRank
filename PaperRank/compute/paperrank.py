@@ -22,7 +22,7 @@ def calculateStablePaperRank(M: sparse.csc_matrix, N: int) -> np.array:
     beta = config.compute['beta']
     epsilon = config.compute['epsilon']
 
-    logging.info('Starting PaperRank computation for {0} IDs'.format(N))
+    logging.info('Computing stable PaperRank solution for {0} IDs'.format(N))
 
     # Flags
     scores_old = np.repeat(1 / N, N)
