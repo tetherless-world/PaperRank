@@ -102,7 +102,7 @@ def constructStochasticMatrix(r: StrictRedis, seen: np.array) \
                 M[idx, i] = 1 / count
         
         # Log progress
-        last_check = __logProgress(N, log_increment, j,
+        last_check = __logProgress(N, log_increment, i,
                                    last_check, 'Column stochasticity')
 
     logging.info('Built verified stochastic matrix with {0} elements'
