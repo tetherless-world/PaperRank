@@ -125,7 +125,7 @@ def __getIdIndex(id_idx_map: sparse.dok_matrix, candidate_id: int) -> int:
     """
 
     # Get index from map
-    idx = id_idx_map[candidate_id, 0]  # Will raise IndexError
+    idx = id_idx_map[np.int(candidate_id), 0]  # Will raise IndexError
 
     # Empty pointer, raise exception
     if idx == 0:
