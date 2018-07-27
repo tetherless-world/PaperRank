@@ -16,7 +16,7 @@ root = logging.getLogger()
 root.setLevel(logging.INFO)
 
 # Adding stdout and log file
-log_file = logging.FileHandler('out.log')
+log_file = logging.FileHandler('update_out.log')
 log_stdout = logging.StreamHandler(sys.stdout)
 
 # Setting formatter
