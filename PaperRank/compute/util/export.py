@@ -23,9 +23,6 @@ class Export:
         self.seen = seen
         self.N = self.seen.size
 
-        # Logging frequency configuration
-        self.log_increment = (self.N / 100) * config.compute['log_freq']
-
         # Parsing PaperRank
         self.__parsePaperRank()
     
@@ -48,21 +45,20 @@ class Export:
             self.r.hmset('PaperRank', {pmid: pr})
 
             # Log progress
-            last_check = logLoopProgress(i, last_check,
-                                         self.log_increment, self.N,
+            last_check = logLoopProgress(i, last_check, self.N,
                                          'PaperRank redis insertion')
     
     def toCSV(self):
         """Function to write the PaperRank dataframe to a csv file.
         """
 
-        logging.info('Writing PaperRanks to CSV file {0}'
-                     .format(config.compute['csv_file']))
+        output_file = 'output/' + config.compute['csv_file']
+
+        logging.info('Writing PaperRanks to CSV file {0}'.format(output_file))
         
         if not os.path.exists('output'):
             os.makedirs('output')
 
-        output_file = 'output/' + config.compute['csv_file']
 
         self.pr_parsed.to_csv(output_file, index=False)
 

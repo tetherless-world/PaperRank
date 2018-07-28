@@ -1,5 +1,4 @@
 from .util import buildReverseIdxMap, getSeenIndex, logLoopProgress
-from ..util import config
 from redis import StrictRedis
 from scipy import sparse
 import numpy as np
@@ -22,9 +21,6 @@ class MarkovTransitionMatrix:
         self.seen = seen
         self.N = self.seen.size
         self.id_idx_map = id_idx_map
-
-        # Logging frequency configuration
-        self.log_increment = (self.N / 100) * config.compute['log_freq']
 
     def construct(self) -> sparse.csr_matrix:
         """Function to construct the Markov matrix for the PaperRank
@@ -96,8 +92,7 @@ class MarkovTransitionMatrix:
                 M[i, j] = 1 / d
             
             # Log progress
-            last_check = logLoopProgress(i, last_check,
-                                         self.log_increment, self.N,
+            last_check = logLoopProgress(i, last_check, self.N,
                                          'Unadjusted transition matrix')
 
         logging.info('Built unadjusted Markov transition matrix with {0} \
@@ -141,8 +136,7 @@ class MarkovTransitionMatrix:
                     M[idx, i] = 1 / count
         
             # Log progress
-            last_check = logLoopProgress(i, last_check,
-                                         self.log_increment, self.N,
+            last_check = logLoopProgress(i, last_check, self.N,
                                          'Stable transition matrix')
         
         logging.info('Built adjusted Markov transition matrix with {0} \

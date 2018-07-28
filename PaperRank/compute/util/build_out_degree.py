@@ -1,5 +1,4 @@
 from .helpers import logLoopProgress
-from ...util import config
 from redis import StrictRedis
 import logging
 import numpy as np
@@ -32,9 +31,6 @@ def buildOutDegreeMap(r: StrictRedis):
 
     logging.info('Building out degree map for {0} IDs'.format(missing_count))
 
-    # Logging settings
-    incr = (missing_count / 100) * config.compute['log_freq']
-
     # Progress tracking
     count = 0
     last_check = 0
@@ -50,8 +46,8 @@ def buildOutDegreeMap(r: StrictRedis):
         # Increment count
         count += 1
         # Log every increment
-        last_check = logLoopProgress(count, last_check, incr,
-                                     missing_count, 'Outbound citation map')
+        last_check = logLoopProgress(count, last_check, missing_count,
+                                     'Outbound citation map')
 
     logging.info('Finished building out degree map for {0} IDs'.format(
         r.hlen('OUT_DEGREE')))
