@@ -1,5 +1,7 @@
+# MacOS and Project stuff
 .DS_Store
 tmp/
+tmp_*
 tmux.conf
 # Application folders
 .idea/
@@ -10,8 +12,9 @@ config/*.json
 !config/base.json
 !config/test.json
 
-# Project stuff
-tmp_*
+# Application output
+output/
+
 
 # Redis files
 dump.rdb
