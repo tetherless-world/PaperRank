@@ -46,10 +46,11 @@ class Manager:
         # Startup
         logging.info('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
-        
+
         markov_matrix = MarkovTransitionMatrix(r=self.r,
                                                seen=self.seen,
                                                id_idx_map=self.id_idx_map)
+        
         M = markov_matrix.construct()
 
         # Initializing StablePaperRank object

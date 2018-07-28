@@ -1,3 +1,4 @@
+from .helpers import logLoopProgress
 from ...util import config
 from redis import StrictRedis
 import logging
@@ -20,16 +21,19 @@ def buildOutDegreeMap(r: StrictRedis):
     logging.info('Difference found between OUT and OUT_DEGREE, building map')
 
     logging.info('Copying OUT and OUT_DEGREE keys for comparison')
+
     # Get list of elements in OUT and OUT_DEGREE
     out_list = [i.decode('utf-8') for i in r.hkeys('OUT')]
     outdeg_list = [i.decode('utf-8') for i in r.hkeys('OUT_DEGREE')]
 
     # Isolate elements that do not have OUT_DEGREE
     missing = np.setdiff1d(out_list, outdeg_list)
-
     missing_count = missing.size
 
     logging.info('Building out degree map for {0} IDs'.format(missing_count))
+
+    # Logging settings
+    incr = (missing_count / 100) * config.compute['log_freq']
 
     # Progress tracking
     count = 0
@@ -46,11 +50,8 @@ def buildOutDegreeMap(r: StrictRedis):
         # Increment count
         count += 1
         # Log every increment
-        log_increment = (missing_count / 100) * config.compute['log_freq']
-        if (count - last_check) > log_increment:
-            last_check = count
-            logging.info('Out degree map {0}% complete'.format(
-                round(count / missing_count, 3) * 100))
+        last_check = logLoopProgress(count, last_check, incr,
+                                     missing_count, 'Outbound citation map')
 
     logging.info('Finished building out degree map for {0} IDs'.format(
         r.hlen('OUT_DEGREE')))
