@@ -1,4 +1,4 @@
-from .util import buildReverseIdxMap, getSeenIndex
+from .util import buildReverseIdxMap, getSeenIndex, logLoopProgress
 from ..util import config
 from redis import StrictRedis
 from scipy import sparse
@@ -96,8 +96,9 @@ class MarkovTransitionMatrix:
                 M[i, j] = 1 / d
             
             # Log progress
-            last_check = self.__logProgress(i, last_check,
-                                            'Unadjusted transition matrix')
+            last_check = logLoopProgress(i, last_check,
+                                         self.log_increment, self.N,
+                                         'Unadjusted transition matrix')
 
         logging.info('Built unadjusted Markov transition matrix with {0} \
             elements'.format(M.nnz))
@@ -140,28 +141,11 @@ class MarkovTransitionMatrix:
                     M[idx, i] = 1 / count
         
             # Log progress
-            last_check = self.__logProgress(i, last_check,
-                                            'Stable transition matrix')
+            last_check = logLoopProgress(i, last_check,
+                                         self.log_increment, self.N,
+                                         'Stable transition matrix')
         
         logging.info('Built adjusted Markov transition matrix with {0} \
             elements'.format(M.nnz))
         
         return M
-
-    def __logProgress(self, count: int, last_check: int, name: str) -> int:
-        """Function to log the progress of the loops through the list of IDs.
-        
-        Arguments:
-            count {int} -- Current iteration count.
-            last_check {int} -- Last time logging was done.
-            name {str} -- Name of the iteration to be used in log.
-        
-        Returns:
-            int -- Updated last_check.
-        """
-        if (count - last_check) > self.log_increment:
-            percent_complete = round(count / self.N, 3) * 100
-            logging.info('{0} iteration is {1}% complete'
-                         .format(name, percent_complete))
-            return count
-        return last_check
