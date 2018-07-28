@@ -2,6 +2,7 @@ from .helpers import logLoopProgress
 from ...util import config
 from redis import StrictRedis
 import logging
+import os
 import pandas as pd
 import numpy as np
 
@@ -58,8 +59,12 @@ class Export:
         logging.info('Writing PaperRanks to CSV file {0}'
                      .format(config.compute['csv_file']))
         
-        self.pr_parsed.to_csv(config.compute['csv_file'],
-                              index=False)
+        if not os.path.exists('output'):
+            os.makedirs('output')
+
+        output_file = 'output/' + config.compute['csv_file']
+
+        self.pr_parsed.to_csv(output_file, index=False)
 
     def __parsePaperRank(self):
         """Function to parse the PaperRank scores, and build a DataFrame
