@@ -18,6 +18,7 @@ mccabe==0.6.1
 more-itertools==4.2.0
 numpy==1.15.0
 packaging==17.1
+pandas==0.23.3
 pathtools==0.1.2
 pep8==1.7.1
 pluggy==0.6.0
@@ -27,6 +28,7 @@ pycodestyle==2.4.0
 Pygments==2.2.0
 pylint==1.9.2
 pyparsing==2.2.0
+python-dateutil==2.7.3
 pytz==2018.5
 PyYAML==3.13
 redis==2.10.6
