@@ -82,3 +82,28 @@ def buildReverseIdxMap(seen: np.array) -> sparse.dok_matrix:
                  .format(id_idx_map.nnz))
     
     return id_idx_map
+
+
+def getSeenIndex(id_idx_map: sparse.dok_matrix, candidate_id: str) -> int:
+    """Function to get the seen array index for a given ID in O(1).
+    
+    Arguments:
+        id_idx_map {sparse.dok_matrix} -- ID -> Index map with O(1) lookup.
+        candidate_id {str} -- Candidate ID to be searched.
+    
+    Raises:
+        IndexError -- Raised when the ID is not found.
+    
+    Returns:
+        int -- Corresponding index of the ID.
+    """
+
+    # Get index from map
+    idx = id_idx_map[np.int(candidate_id), 0]   # Will raise IndexError
+
+    # If empty pointer, raise exception
+    if idx == 0:
+        raise IndexError
+    
+    # Return idx - 1 because we added 1 at initialization
+    return idx - 1

@@ -1,4 +1,4 @@
-from .util import buildReverseIdxMap
+from .util import buildReverseIdxMap, getSeenIndex
 from ..util import config
 from redis import StrictRedis
 from scipy import sparse
@@ -80,7 +80,7 @@ class MarkovTransitionMatrix:
             for inbound in inbound_list:
                 # Compute position in matrix (if exists)
                 try:
-                    j = self.__getIndex(inbound)
+                    j = getSeenIndex(self.id_idx_map, inbound)
                 except IndexError:
                     # If the ID is not seen, log and skip it
                     logging.warn('Inbound citation {0} for paper {1} not \
@@ -147,29 +147,6 @@ class MarkovTransitionMatrix:
             elements'.format(M.nnz))
         
         return M
-
-    def __getIndex(self, candidate_id: str) -> int:
-        """Function to get the seen array index for a given ID in O(1).
-        
-        Arguments:
-            candidate_id {str} -- Candidate ID to be searched.
-        
-        Raises:
-            IndexError -- Raised when the ID is not found.
-        
-        Returns:
-            int -- Corresponding index of the ID.
-        """
-
-        # Get index from map
-        idx = self.id_idx_map[np.int(candidate_id), 0]  # Will raise IndexError
-
-        # Empty pointer, raise exception
-        if idx == 0:
-            raise IndexError
-        
-        # Return idx - 1 because we added 1 at initialization
-        return idx - 1
 
     def __logProgress(self, count: int, last_check: int, name: str) -> int:
         """Function to log the progress of the loops through the list of IDs.
