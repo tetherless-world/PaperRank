@@ -19,7 +19,7 @@ def logLoopProgress(count: int, last_check: int, incr: int, N: int,
     # Check if the current count has exceeded the increment
     if (count - last_check) > incr:
         # Compute completed percentage, log
-        percent_complete = round(count / N, 3) * 100
+        percent_complete = round(count / N * 100, 3)
 
         logging.info('{0} iteration is {1}% complete'
                      .format(name, percent_complete))
