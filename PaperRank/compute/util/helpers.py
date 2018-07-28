@@ -24,7 +24,6 @@ def logLoopProgress(count: int, last_check: int, N: int,
         # Compute completed percentage, log
         percent_complete = round(count / N * 100, 3)
 
-
         logging.info('{0} iteration is {1}% complete'
                      .format(name, percent_complete))
 

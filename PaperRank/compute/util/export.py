@@ -59,7 +59,6 @@ class Export:
         if not os.path.exists('output'):
             os.makedirs('output')
 
-
         self.pr_parsed.to_csv(output_file, index=False)
 
     def __parsePaperRank(self):
