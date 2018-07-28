@@ -1,5 +1,5 @@
 from .paperrank import StablePaperRank
-from .util import buildOutDegreeMap, buildIdList, buildReverseIdxMap
+from .util import buildOutDegreeMap, buildIdList, buildReverseIdxMap, Export
 from .transition_matrix import MarkovTransitionMatrix
 from ..util import config
 
@@ -39,8 +39,11 @@ class Manager:
         # Logging frequency configuration
         self.log_increment = (self.N / 100) * config.compute['log_freq']
 
-    def start(self):
+    def start(self, export: bool=True):
         """Function to start the PaperRank computation.
+
+        Keyword Arguments:
+            export {bool} -- Toggle exporting paperrank. (default: {True})
         """
 
         # Startup
@@ -59,5 +62,16 @@ class Manager:
         paperrank = compute_engine.calculate()
 
         logging.info('Computed PaperRanks for {0} IDs'.format(self.N))
+
+        # If no export, return
+        if not export:
+            return paperrank
+
+        # Initialize export manager
+        export_manager = Export(r=self.r, paperrank=paperrank, seen=self.seen)
+        
+        # Export to Redis and CSV
+        export_manager.toRedis()
+        export_manager.toCSV()
 
         return paperrank

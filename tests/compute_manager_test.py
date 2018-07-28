@@ -100,6 +100,6 @@ class TestComputeManager(unittest.TestCase):
         self.config.compute['id_limit'] = 10
         # Run PaperRank compute
         compute_manager = PaperRank.compute.Manager(r=self.redis)
-        paperrank = compute_manager.start()
+        paperrank = compute_manager.start(export=False)
 
         self.assertEqual(len(paperrank), 4)
