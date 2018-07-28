@@ -46,9 +46,7 @@ r = redis.StrictRedis(
 )
 
 # Creating manager
-manager = PaperRank.compute.Manager(r=r)
+compute_engine = PaperRank.compute.Manager(r=r)
 
-paperrank = manager.start(cutoff=1000000)
-
-with open('paperrank.csv', 'w') as f:
-    np.savetxt('paperrank.csv', paperrank, delimiter=',', fmt='%.15f')
+# Run compute engine
+compute_engine.start()

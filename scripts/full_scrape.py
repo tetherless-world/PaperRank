@@ -44,10 +44,7 @@ conn_pool = redis.ConnectionPool(
 )
 
 # Creating Manager
-manager = PaperRank.update.Manager(conn_pool=conn_pool)
+update_engine = PaperRank.update.Manager(conn_pool=conn_pool)
 
-# # Adding some IDs to the EXPLORE set for initialization, if empty
-# if db.isEmpty(database='E'):
-#     db.addMultiple(database='E', data=[21876761, 21876726])
-
-manager.start()
+# Run update engine
+update_engine.start()
