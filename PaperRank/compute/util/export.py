@@ -8,6 +8,14 @@ import numpy as np
 
 class Export:
     def __init__(self, r: StrictRedis, paperrank: np.array, seen: np.array):
+        """Initialization logic for the Export module.
+        
+        Arguments:
+            r {StrictRedis} -- StrictRedis object for database operations.
+            paperrank {np.array} -- PaperRanks to be exported.
+            seen {np.array} -- List of IDs corresponding to the PaperRanks.
+        """
+
         # Storing input parameters
         self.r = r
         self.paperrank = paperrank
