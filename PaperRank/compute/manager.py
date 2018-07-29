@@ -70,8 +70,10 @@ class Manager:
         # Initialize export manager
         export_manager = Export(r=self.r, paperrank=paperrank, seen=self.seen)
         
-        # Export to Redis and CSV
+        # Export to Redis, CSV and Excel
         export_manager.toRedis()
         export_manager.toCSV()
+        export_manager.toExcel()
+        export_manager.toSerialized(transition_matrix=M)
 
         return paperrank
