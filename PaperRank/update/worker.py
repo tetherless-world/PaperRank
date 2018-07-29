@@ -1,4 +1,5 @@
 from .citation.ncbi_citation import NCBICitation as Citation
+
 from collections import OrderedDict
 from redis.client import StrictPipeline
 

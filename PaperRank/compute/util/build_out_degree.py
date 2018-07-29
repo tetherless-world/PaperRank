@@ -1,4 +1,5 @@
 from .helpers import logLoopProgress
+
 from redis import StrictRedis
 import logging
 import numpy as np

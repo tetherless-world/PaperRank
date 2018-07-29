@@ -1,4 +1,5 @@
 from context import PaperRank
+
 from redis import StrictRedis
 import numpy as np
 

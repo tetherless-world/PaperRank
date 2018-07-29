@@ -1,4 +1,5 @@
 from ..util import config
+
 from scipy import sparse
 import logging
 import numpy as np

@@ -1,11 +1,12 @@
 from ..util import config
 from .query import Query
+
 from multiprocessing import Pool, Value, Lock
 from multiprocessing import Manager as ProcManager
+from redis import ConnectionPool, StrictRedis
 from time import sleep
 import logging
 import os
-from redis import ConnectionPool, StrictRedis
 
 
 class Manager:

@@ -1,5 +1,6 @@
 from .worker import worker
 from ..util import config
+
 from multiprocessing import Value, Lock
 from collections import OrderedDict
 from redis.client import StrictPipeline

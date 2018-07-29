@@ -1,5 +1,6 @@
-import logging
 from ...util import config
+
+import logging
 
 
 def logLoopProgress(count: int, last_check: int, N: int,

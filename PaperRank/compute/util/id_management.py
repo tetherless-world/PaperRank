@@ -1,4 +1,5 @@
 from .helpers import logLoopProgress
+
 from redis import StrictRedis
 from scipy import sparse
 import logging

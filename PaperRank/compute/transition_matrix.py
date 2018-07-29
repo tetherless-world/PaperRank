@@ -1,4 +1,5 @@
 from .util import buildReverseIdxMap, getSeenIndex, logLoopProgress
+
 from redis import StrictRedis
 from scipy import sparse
 import numpy as np
