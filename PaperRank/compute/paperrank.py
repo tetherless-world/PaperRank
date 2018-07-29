@@ -62,6 +62,10 @@ class StablePaperRank:
             scores_old = scores
             count += 1
 
+            # Logging
+            logging.info('Completed {0} iterations with difference {1}'
+                         .format(count, difference))
+
         logging.info('Computed stable PaperRanks for {0} IDs in {1} iterations'
                      .format(self.N, count))
 
