@@ -25,9 +25,12 @@ def logLoopProgress(count: int, last_check: int, N: int,
         # Compute completed percentage, log
         percent_complete = count / N * 100
 
+        # Converting to string with 1 decimal point
+        percent_complete = ('%.1f' % percent_complete)
+
         # regulate percentage length (i'm anal)
-        if len(str(percent_complete)) < 4:
-            percent_complete = ' ' + ('%.1f' % percent_complete)
+        if len(percent_complete) < 4:
+            percent_complete = ' ' + percent_complete
 
         logging.info('{0} iteration is {1}% complete'
                      .format(name, percent_complete))
