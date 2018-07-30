@@ -21,7 +21,7 @@ class _Decorators:
         def wrapper(*args, **kwargs):
             if not os.path.exists(config.compute['output_folder']):
                 os.makedirs(config.compute['output_folder'])
-            return decorated(*args, **kwargs)
+            decorated(*args, **kwargs)
         return wrapper
 
 
