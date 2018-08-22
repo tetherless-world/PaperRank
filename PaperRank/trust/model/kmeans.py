@@ -5,10 +5,11 @@ import numpy as np
 
 def computeKMeansProportions(data: np.array, n_clusters: int) -> np.array:
     """Function to compute cluster proportions for a given dataset and a
-    given number of clusters.
+    given number of clusters. The returned cluster proportions are in ascending
+    order with respect to the computed cluster centers.
     
     Arguments:
-        data {np.array} -- Data to be clustered.
+        data {np.array} -- Data to be clustered (1d).
         n_clusters {int} -- Number of clusters.
     
     Returns:
