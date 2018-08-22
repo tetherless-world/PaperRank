@@ -67,3 +67,25 @@ class TestGammaMix(unittest.TestCase):
 
         self.assertListEqual(list(expected_posterior.reshape(-1)),
                              list(candidate_posterior.reshape(-1)))
+
+    def test_gammaMixModel_updateWeights(self):
+        """Test the functionality of updating weights in the
+        GammaMixModel module.
+        """
+
+        # Setting up test data and parameters
+        test_data = np.array([1., 1., 1., 2., 1.5, 3, 1.1, 1.2])
+        test_params = np.array([[1., 1.], [2., 5.]])
+        test_loc = 0
+        test_weights = np.array([0.875, 0.125])
+
+        # Initializing model with dummy parameters
+        test_model = self.gamma_mix.GammaMixModel(weights=test_weights,
+                                                  params=test_params,
+                                                  loc=test_loc)
+
+        # Computing posterior probabilities with `update_weights` flag
+        test_model.computePosterior(data=test_data, update_weights=True)
+
+        # Check if weights changed after computation
+        self.assertFalse(set(test_weights) == set(test_model.weights))
