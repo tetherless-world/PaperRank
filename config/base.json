@@ -23,6 +23,9 @@
         "pickle_pr_file": "paperrank.pickle",
         "pickle_m_file": "transition_matrix.npz"
     },
+    "trust": {
+        "gamma_shift_constant": 0.01
+    },
     "test": {
         "redis": {
             "host": "localhost",
