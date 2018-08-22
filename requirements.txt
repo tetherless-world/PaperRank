@@ -36,8 +36,10 @@ pytz==2018.5
 PyYAML==3.13
 redis==2.10.6
 requests==2.19.1
+scikit-learn==0.19.2
 scipy==1.1.0
 six==1.11.0
+sklearn==0.0
 snowballstemmer==1.2.1
 sphinxcontrib-websupport==1.1.0
 tornado==5.0.2
