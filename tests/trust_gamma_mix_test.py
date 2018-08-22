@@ -50,7 +50,8 @@ class TestGammaMix(unittest.TestCase):
         # Initializing model with dummy parameters
         test_model = self.gamma_mix.GammaMixModel(weights=test_weights,
                                                   params=test_params,
-                                                  loc=test_loc)
+                                                  loc=test_loc,
+                                                  m=test_weights.size)
 
         # Computing posterior probabilities manually for verification (3 steps)
         gamma_probs = np.array([test_weights[i] * gamma.pdf(
@@ -82,7 +83,8 @@ class TestGammaMix(unittest.TestCase):
         # Initializing model with dummy parameters
         test_model = self.gamma_mix.GammaMixModel(weights=test_weights,
                                                   params=test_params,
-                                                  loc=test_loc)
+                                                  loc=test_loc,
+                                                  m=test_weights.size)
 
         # Computing posterior probabilities with `update_weights` flag
         test_model.computePosterior(data=test_data, update_weights=True)

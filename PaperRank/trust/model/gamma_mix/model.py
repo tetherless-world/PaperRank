@@ -8,7 +8,8 @@ class GammaMixModel():
     posterior membership probabilities using the mixture model.
     """
 
-    def __init__(self, weights: np.array, params: np.ndarray, loc: float):
+    def __init__(self, weights: np.array, params: np.ndarray,
+                 loc: float, m: int):
         """Gamma Mixture Model initialization.
         
         Arguments:
@@ -17,12 +18,14 @@ class GammaMixModel():
             params {np.array} -- Parameters of each of the mixture Gamma
                                  distributions (m x 2; m = number of mixtures).
             loc {float} -- Location parameter for the mixture distributions.
+            m {int} -- Number of mixture distributions.
         """
 
         # Save each of the parameters
         self.weights = weights
         self.params = params
         self.loc = loc
+        self.m = m
 
     def computePosterior(self, data: np.array, params_new: np.ndarray=None,
                          update_weights: bool=False) -> np.ndarray:
@@ -83,7 +86,7 @@ class GammaMixModel():
                                              a=self.params[i][0],
                                              scale=self.params[i][1],
                                              loc=self.loc)
-                 for i in range(self.weights.size)]
+                 for i in range(self.m)]
 
         # Cast to np.ndarray, return
         return np.array(probs)
