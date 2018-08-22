@@ -24,8 +24,8 @@ class GammaMixModel():
         self.params = params
         self.loc = loc
 
-    def computeMembership(self, data: np.array, params_new: np.ndarray=None,
-                          update_weights: bool=False) -> np.ndarray:
+    def computePosterior(self, data: np.array, params_new: np.ndarray=None,
+                         update_weights: bool=False) -> np.ndarray:
         """Function to compute posterior membership probabilities given some
         data. This is computed by calculating the PDF of the data for each
         of the mixing Gamma distributions, and dividing by the sum of them to
@@ -80,7 +80,7 @@ class GammaMixModel():
 
         # Compute probabilities for each of the distributions
         probs = [self.weights[i] * gamma.pdf(x=data,
-                                             shape=self.params[i][0],
+                                             a=self.params[i][0],
                                              scale=self.params[i][1],
                                              loc=self.loc)
                  for i in range(self.weights.size)]

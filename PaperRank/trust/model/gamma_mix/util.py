@@ -1,4 +1,3 @@
-from .gamma_mix_model import GammaMixModel
 from ....util import config
 
 import numpy as np
