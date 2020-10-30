@@ -102,4 +102,6 @@ class TestComputeManager(unittest.TestCase):
         compute_manager = PaperRank.compute.Manager(r=self.redis)
         paperrank = compute_manager.start(export=False)
 
+        print(paperrank)
+
         self.assertEqual(len(paperrank), 4)

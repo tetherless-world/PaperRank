@@ -3,7 +3,6 @@ from .citation.ncbi_citation import NCBICitation as Citation
 from collections import OrderedDict
 from redis.client import StrictPipeline
 
-
 def worker(pipe: StrictPipeline, linkset: OrderedDict) -> StrictPipeline:
     """Worker function. Queues actions in the `StrictPipeline` object to add
     tuples to GRAPH, maps outbound citations in OUT, adds unseen IDs to EXPLORE
