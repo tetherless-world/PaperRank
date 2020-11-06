@@ -62,18 +62,19 @@ class Manager:
         paperrank = compute_engine.calculate()
 
         logging.info('Computed PaperRanks for {0} IDs'.format(self.N))
-
+    
+        #{test_keys[i]: test_values[i] for i in range(len(test_keys))} 
         # If no export, return
         if not export:
-            return paperrank
+            return dict(zip(self.seen, paperrank))
 
         # Initialize export manager
         export_manager = Export(r=self.r, paperrank=paperrank, seen=self.seen)
         
         # Export to Redis, CSV and Excel
-        export_manager.toRedis()
+        #export_manager.toRedis()
         export_manager.toCSV()
-        export_manager.toExcel()
-        export_manager.toSerialized(transition_matrix=M)
+        #export_manager.toExcel()
+        #export_manager.toSerialized(transition_matrix=M)
 
         return paperrank
