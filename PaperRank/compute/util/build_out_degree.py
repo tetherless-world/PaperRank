@@ -1,11 +1,9 @@
 from .helpers import logLoopProgress
-
-from redis import StrictRedis
 import logging
 import numpy as np
 
 
-def buildOutDegreeMap(r: StrictRedis):
+def buildOutDegreeMap(r: map):
     """Function to build the out degree map for the citations in the 'OUT'
     database in Redis.
     

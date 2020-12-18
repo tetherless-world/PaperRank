@@ -3,7 +3,6 @@ import gzip
 import logging
 from context import PaperRank
 from PaperRank.update.citation.ncbi_citation import NCBICitation as Citation
-import redis
 import numpy as np
 import sys
 import pandas as pd
@@ -20,11 +19,11 @@ def final_compute(filePath):
     config = PaperRank.util.config
 
     # Creating redis-py connection
-    r = redis.StrictRedis(
-        host=config.redis['host'],
-        port=config.redis['port'],
-        db=config.redis['db']
-    )
+    # r = redis.StrictRedis(
+    #     host=config.redis['host'],
+    #     port=config.redis['port'],
+    #     db=config.redis['db']
+    # )
 
     #map each Citation id to an integer
     id_map = {}
@@ -65,16 +64,16 @@ def final_compute(filePath):
         seen.append(rev_id_map[Citation(x).id])
 
     # Flush db
-    r.flushdb()
-    r.hmset('IN', inbound_map)
-    r.hmset('OUT', outbound_map)
-    r.sadd('SEEN', *seen)
+    # r.flushdb()
+    # r.hmset('IN', inbound_map)
+    # r.hmset('OUT', outbound_map)
+    # r.sadd('SEEN', *seen)
 
     # Running util to set up out degree map
-    PaperRank.compute.util.buildOutDegreeMap(r=r)
+    #PaperRank.compute.util.buildOutDegreeMap(r=r)
 
     # Creating manager
-    compute_engine = PaperRank.compute.Manager(r=r)
+    compute_engine = PaperRank.compute.Manager(r=outbound_map, r_in= inbound_map, seenset = seen)
 
     # Run compute engine
     output = compute_engine.start(export = False)
@@ -90,13 +89,13 @@ inputFiles = open(sys.argv[1], 'r')
 for fileName in inputFiles:
     strippedFile = fileName.rstrip()
 
-    try:
-        output = final_compute(pathToData + strippedFile)
-        output_file = './output/' + strippedFile[:-3] + '.csv'
-        print('Writing '+ output_file)
-        (pd.DataFrame.from_dict(data=output, orient='index').to_csv(output_file, header=False))
-    except Exception:
-        print(pathToData + strippedFile + " not found")
+    # try:
+    output = final_compute(pathToData + strippedFile)
+    output_file = './output/' + strippedFile[:-3] + '.csv'
+    print('Writing '+ output_file)
+    (pd.DataFrame.from_dict(data=output, orient='index').to_csv(output_file, header=False))
+    # except Exception e:
+    #     print(e)
 
     
 

@@ -3,13 +3,12 @@ from .util import buildOutDegreeMap, buildIdList, buildReverseIdxMap, Export
 from .transition_matrix import MarkovTransitionMatrix
 from ..util import config
 
-from redis import StrictRedis
 import logging
 import numpy as np
 
 
-class Manager:
-    def __init__(self, r: StrictRedis, cutoff: int=None):
+class Manager: #build r from fileIndex
+    def __init__(self, r: map, r_in: map, seenset: set, cutoff: int=None):
         """Manager class initialization. Loads configuration variables,
         and recovers gracefully from a crash by default.
         
@@ -22,16 +21,17 @@ class Manager:
 
         # Class variables
         self.r = r
+        self.r_in = r_in
 
         # Intializing SEEN ID list
         logging.info('Initializing with {0} IDs in SEEN'
-                     .format(r.scard('SEEN')))
-        self.seen = buildIdList(r=self.r, cutoff=cutoff)
+                     .format(len(seenset)))
+        self.seen = buildIdList(seenset, cutoff=cutoff)
         self.N = self.seen.size
 
-        # Building out degree map
-        logging.info('Building out degree map')
-        buildOutDegreeMap(r=self.r)
+        # # Building out degree map
+        # logging.info('Building out degree map')
+        # buildOutDegreeMap(r=self.r)
 
         # Building reverse index map for O(1) index lookup
         self.id_idx_map = buildReverseIdxMap(seen=self.seen)
@@ -50,7 +50,8 @@ class Manager:
         logging.info('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
 
-        markov_matrix = MarkovTransitionMatrix(r=self.r,
+        markov_matrix = MarkovTransitionMatrix(r_out=self.r,
+                                                r_in = self.r_in,
                                                seen=self.seen,
                                                id_idx_map=self.id_idx_map)
         

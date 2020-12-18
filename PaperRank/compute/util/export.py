@@ -67,12 +67,12 @@ class Export:
                                          'PaperRank redis insertion')
     
     @_Decorators.checkFolder
-    def toCSV(self):
+    def toCSV(self, fileName):
         """Function to write the PaperRank dataframe to a csv file.
         """
 
         output_file = config.compute['output_folder'] + \
-            config.compute['csv_file']
+            fileName
 
         logging.info('Writing PaperRanks to CSV file {0}'.format(output_file))
 

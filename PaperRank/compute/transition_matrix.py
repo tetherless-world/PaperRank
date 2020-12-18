@@ -1,13 +1,12 @@
 from .util import buildReverseIdxMap, getSeenIndex, logLoopProgress
 
-from redis import StrictRedis
 from scipy import sparse
 import numpy as np
 import logging
 
 
 class MarkovTransitionMatrix:
-    def __init__(self, r: StrictRedis, seen: np.array,
+    def __init__(self, r_out: map, r_in: map, seen: np.array,
                  id_idx_map: sparse.dok_matrix):
         """Initialization logic for the MarkovTransitionMatrix submodule.
         
@@ -18,7 +17,8 @@ class MarkovTransitionMatrix:
         """
 
         # Storing input parameters
-        self.r = r
+        self.r = r_out
+        self.r_in = r_in
         self.seen = seen
         self.N = self.seen.size
         self.id_idx_map = id_idx_map
@@ -68,10 +68,12 @@ class MarkovTransitionMatrix:
 
         for i in range(self.N):
             # Isolate current ID
-            paper_id = str(self.seen[i])
+            paper_id = self.seen[i]
+
+            print(self.r_in)
 
             # Getting inbound citations
-            inbound_list = eval(self.r.hget('IN', paper_id))
+            inbound_list = eval(str(self.r_in[paper_id]))
 
             # Iterate throug inbound citations
             for inbound in inbound_list:
@@ -85,7 +87,7 @@ class MarkovTransitionMatrix:
                     continue
 
                 # Get out degree
-                d = float(self.r.hget('OUT_DEGREE', inbound).decode('utf-8'))
+                d = float(self.r_out[inbound].decode('utf-8'))
                 # Set d = 1 if out degree is 0, to avoid division by 0
                 d = 1.0 if d == 0.0 else d
                 

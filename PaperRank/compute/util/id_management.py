@@ -1,12 +1,10 @@
 from .helpers import logLoopProgress
-
-from redis import StrictRedis
 from scipy import sparse
 import logging
 import numpy as np
 
 
-def buildIdList(r: StrictRedis, cutoff: int) -> np.array:
+def buildIdList(r: set, cutoff: int) -> np.array:
     """Function to build a list of IDs to be used by the compute module.
     
     Arguments:
@@ -18,13 +16,13 @@ def buildIdList(r: StrictRedis, cutoff: int) -> np.array:
     """
 
     # Isolating number of IDs to be extracted
-    seen_count = r.scard('SEEN')
+    seen_count = len(r)
 
     logging.info('Initializing copy of {0} IDs from SEEN'
                  .format(seen_count))
     
     # Extracting IDs, casting to numpy array for easier handling
-    seen_raw = np.array(list(r.smembers('SEEN')), dtype=np.int)
+    seen_raw = np.array(list(r), dtype=np.int)
 
     # Sorting (NOTE: This sorting heuristic is specific to PubMed IDs)
     # PubMedIDs are sequential. Reversing orders them from newest to oldest
