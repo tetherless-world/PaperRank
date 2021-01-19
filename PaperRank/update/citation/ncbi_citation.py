@@ -30,9 +30,10 @@ class NCBICitation(CitationAbstractClass):
             return
 
         if query_raw['inCitations'] == [] and query_raw['outCitations'] == []:
+            pass
             # No input or output links found, log ID
-            logging.warning('No inbound or outbound citations found for {0}'
-                            .format(self.id))
+        #    logging.warning('No inbound or outbound citations found for {0}'
+                            #.format(self.id))
         else:
             self.inbound = query_raw['inCitations']
             self.outbound = query_raw['outCitations']

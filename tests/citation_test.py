@@ -84,8 +84,8 @@ def final_compute(filePath):
 
     return idToVal
 
-pathToData = './data/'
-inputFiles = open(sys.argv[1], 'r')
+pathToData = './data/SemanticScholar/'
+inputFiles = open(pathToData + sys.argv[1], 'r')
 for fileName in inputFiles:
     strippedFile = fileName.rstrip()
 

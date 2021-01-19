@@ -17,7 +17,7 @@ class MarkovTransitionMatrix:
         """
 
         # Storing input parameters
-        self.r = r_out
+        self.r_out = r_out
         self.r_in = r_in
         self.seen = seen
         self.N = self.seen.size
@@ -70,7 +70,7 @@ class MarkovTransitionMatrix:
             # Isolate current ID
             paper_id = self.seen[i]
 
-            print(self.r_in)
+            #print(self.r_in)
 
             # Getting inbound citations
             inbound_list = eval(str(self.r_in[paper_id]))
@@ -85,9 +85,9 @@ class MarkovTransitionMatrix:
                     logging.warn('Inbound citation {0} for paper {1} not \
                         indexed'.format(inbound, paper_id))
                     continue
-
+                #print(self.r_out)
                 # Get out degree
-                d = float(self.r_out[inbound].decode('utf-8'))
+                d = float(len(self.r_out[inbound]))
                 # Set d = 1 if out degree is 0, to avoid division by 0
                 d = 1.0 if d == 0.0 else d
                 
