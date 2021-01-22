@@ -8,36 +8,34 @@ import sys
 import pandas as pd
 import csv
 
-def final_compute(filePath):
-    #Test to see if the modification to ncbi_citation.py works
+
+pathToData = './data/SemanticScholar/'
+inputFiles = open(pathToData + sys.argv[1], 'r')
+
+#setup variables and data structures to be used
+id_map = {}
+rev_id_map = {}
+i = 0
+
+inbound_map = {}
+outbound_map = {}
+seen = []
+
+for fileName in inputFiles:
+    strippedFile = fileName.rstrip()
+    print('Reading '+ strippedFile[:-3])
+
     data = []
     for obj in gzip.GzipFile(filePath, 'r'):
         data.append(json.loads(obj.decode('utf-8')))
 
-    # Setting up configuration
-    PaperRank.util.configSetup(override='base.json')
-    config = PaperRank.util.config
-
-    # Creating redis-py connection
-    # r = redis.StrictRedis(
-    #     host=config.redis['host'],
-    #     port=config.redis['port'],
-    #     db=config.redis['db']
-    # )
-
-    #map each Citation id to an integer
-    id_map = {}
-    rev_id_map = {}
-    i = 0
+    #map each Citation id to an integer for Markov Matrix to work
     for x in data:
         id_map[i] = Citation(x).id
         rev_id_map[Citation(x).id] = i
         i = i + 1
 
     #setup inbound and outbound maps
-    inbound_map = {}
-    outbound_map = {}
-    seen = []
     for x in data:
         inbounds = Citation(x).inbound
         outbounds = Citation(x).outbound
@@ -63,39 +61,23 @@ def final_compute(filePath):
         outbound_map[rev_id_map[Citation(x).id]] = int_outbound
         seen.append(rev_id_map[Citation(x).id])
 
-    # Flush db
-    # r.flushdb()
-    # r.hmset('IN', inbound_map)
-    # r.hmset('OUT', outbound_map)
-    # r.sadd('SEEN', *seen)
+# Setting up configuration
+PaperRank.util.configSetup(override='base.json')
+config = PaperRank.util.config
 
-    # Running util to set up out degree map
-    #PaperRank.compute.util.buildOutDegreeMap(r=r)
+# Creating manager
+compute_engine = PaperRank.compute.Manager(r=outbound_map, r_in= inbound_map, seenset = seen)
 
-    # Creating manager
-    compute_engine = PaperRank.compute.Manager(r=outbound_map, r_in= inbound_map, seenset = seen)
+# Run compute engine
+output = compute_engine.start(export = False)
 
-    # Run compute engine
-    output = compute_engine.start(export = False)
+idToVal = {}
+for key in output:
+    idToVal[id_map[key]] = output[key]
 
-    idToVal = {}
-    for key in output:
-        idToVal[id_map[key]] = output[key]
-
-    return idToVal
-
-pathToData = './data/SemanticScholar/'
-inputFiles = open(pathToData + sys.argv[1], 'r')
-for fileName in inputFiles:
-    strippedFile = fileName.rstrip()
-
-    # try:
-    output = final_compute(pathToData + strippedFile)
-    output_file = './output/' + strippedFile[:-3] + '.csv'
-    print('Writing '+ output_file)
-    (pd.DataFrame.from_dict(data=output, orient='index').to_csv(output_file, header=False))
-    # except Exception e:
-    #     print(e)
+#write to csv file
+output_file = './output/output.csv'
+pd.DataFrame.from_dict(data=output, orient='index').to_csv(output_file, header=False)
 
     
 
