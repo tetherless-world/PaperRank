@@ -26,7 +26,7 @@ for fileName in inputFiles:
     print('Reading '+ strippedFile[:-3])
 
     data = []
-    for obj in gzip.GzipFile(filePath, 'r'):
+    for obj in gzip.GzipFile(pathToData + strippedFile, 'r'):
         data.append(json.loads(obj.decode('utf-8')))
 
     #map each Citation id to an integer for Markov Matrix to work
@@ -39,15 +39,15 @@ for fileName in inputFiles:
     for x in data:
         inbounds = Citation(x).inbound
         outbounds = Citation(x).outbound
-        int_inbound = []
-        int_outbound = []
+        int_inbound = set()
+        int_outbound = set()
         if len(inbounds) != 0:
             for ins in inbounds:
                 if not(ins in rev_id_map):
                     id_map[i] = ins
                     rev_id_map[ins] = i
                     i = i+1
-                int_inbound.append(rev_id_map[ins])
+                int_inbound.add(rev_id_map[ins])
         
         if len(outbounds) != 0:
             for out in inbounds:
@@ -55,7 +55,7 @@ for fileName in inputFiles:
                     id_map[i] = out
                     rev_id_map[out] = i
                     i = i+1
-                int_outbound.append(rev_id_map[out])
+                int_outbound.add(rev_id_map[out])
 
         inbound_map[rev_id_map[Citation(x).id]] = int_inbound
         outbound_map[rev_id_map[Citation(x).id]] = int_outbound
