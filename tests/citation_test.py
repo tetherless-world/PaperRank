@@ -19,47 +19,53 @@ i = 0
 
 inbound_map = {}
 outbound_map = {}
+seen_id = set()
 seen = []
 
 for fileName in inputFiles:
     strippedFile = fileName.rstrip()
     print('Reading '+ strippedFile[:-3])
 
-    data = []
     for obj in gzip.GzipFile(pathToData + strippedFile, 'r'):
-        data.append(json.loads(obj.decode('utf-8')))
+        x = json.loads(obj.decode('utf-8'))
+        
+        #create citation of loaded data
+        cite = Citation(x)
+        
+        #map id to integer
+        seen_id.add(cite.id)
+        id_map[i] = cite.id
+        rev_id_map[cite.id] = i
+        i = i+1
 
-    #map each Citation id to an integer for Markov Matrix to work
-    for x in data:
-        id_map[i] = Citation(x).id
-        rev_id_map[Citation(x).id] = i
-        i = i + 1
+        inbounds = cite.inbound
+        outbounds = cite.outbound
 
-    #setup inbound and outbound maps
-    for x in data:
-        inbounds = Citation(x).inbound
-        outbounds = Citation(x).outbound
-        int_inbound = set()
-        int_outbound = set()
+        int_inbound = []
+        int_outbound = []
+
         if len(inbounds) != 0:
             for ins in inbounds:
-                if not(ins in rev_id_map):
+                if not(ins in seen_id):
+                    seen_id.add(ins)
                     id_map[i] = ins
                     rev_id_map[ins] = i
                     i = i+1
-                int_inbound.add(rev_id_map[ins])
+                int_inbound.append(rev_id_map[ins])
         
         if len(outbounds) != 0:
             for out in inbounds:
-                if not(out in rev_id_map):
+                if not(out in seen_id):
+                    seen_id.add(out)
                     id_map[i] = out
                     rev_id_map[out] = i
                     i = i+1
-                int_outbound.add(rev_id_map[out])
-
-        inbound_map[rev_id_map[Citation(x).id]] = int_inbound
-        outbound_map[rev_id_map[Citation(x).id]] = int_outbound
-        seen.append(rev_id_map[Citation(x).id])
+                int_outbound.append(rev_id_map[out])
+        
+        #update inbound and outbound lists
+        inbound_map[rev_id_map[cite.id]] = int_inbound
+        outbound_map[rev_id_map[cite.id]] = int_outbound
+        seen.append(rev_id_map[cite.id])
 
 # Setting up configuration
 PaperRank.util.configSetup(override='base.json')
