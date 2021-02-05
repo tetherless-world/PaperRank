@@ -31,7 +31,6 @@ for fileName in inputFiles:
         #create citation of loaded data
         cite = Citation(x)
         # or reconstitute it using hex(cite.id)[2:-1]
-        cite.identifier = cite.id
         cite.id = int(cite.id,16)
         
         #map id to integer
@@ -42,6 +41,9 @@ for fileName in inputFiles:
         #update inbound and outbound lists
         inbound_map[cite.id] = [int(x,16) for x in cite.inbound]
         outbound_map[cite.id] = [int(x,16) for x in cite.outbound]
+        del cite
+        del x
+        del obj
 
 # Setting up configuration
 PaperRank.util.configSetup(override='base.json')
@@ -52,10 +54,6 @@ compute_engine = PaperRank.compute.Manager(r=outbound_map, r_in= inbound_map, se
 
 # Run compute engine
 output = compute_engine.start(export = False)
-
-idToVal = {}
-for key in output:
-    idToVal[id_map[key]] = output[key]
 
 #write to csv file
 output_file = './output/output.csv'
