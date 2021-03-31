@@ -26,7 +26,7 @@ class _Decorators:
 
 
 class Export:
-    def __init__(self, r: StrictRedis, paperrank: np.array, seen: np.array):
+    def __init__(self, r: StrictRedis, paperrank: np.array, seen):
         """Initialization logic for the Export module.
         
         Arguments:
@@ -39,7 +39,7 @@ class Export:
         self.r = r
         self.paperrank = paperrank
         self.seen = seen
-        self.N = self.seen.size
+        self.N = len(seen)
 
         # Parsing PaperRank
         self.__parsePaperRank()
@@ -67,12 +67,11 @@ class Export:
                                          'PaperRank redis insertion')
     
     @_Decorators.checkFolder
-    def toCSV(self, fileName):
+    def toCSV(self):
         """Function to write the PaperRank dataframe to a csv file.
         """
 
-        output_file = config.compute['output_folder'] + \
-            fileName
+        output_file = config.compute['output_folder'] + 'output.csv'
 
         logging.info('Writing PaperRanks to CSV file {0}'.format(output_file))
 

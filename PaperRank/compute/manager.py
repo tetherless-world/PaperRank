@@ -24,17 +24,20 @@ class Manager: #build r from fileIndex
         self.r_in = r_in
 
         # Intializing SEEN ID list
-        logging.info('Initializing with {0} IDs in SEEN'
-                     .format(len(seenset)))
-        self.seen = buildIdList(seenset, cutoff=cutoff)
+        print('Initializing with {0} IDs in SEEN'
+                .format(seenset.size))
+        #self.seen = buildIdList(seenset, cutoff=cutoff)
+        self.seen = seenset
         self.N = self.seen.size
+        
 
         # # Building out degree map
         # logging.info('Building out degree map')
         # buildOutDegreeMap(r=self.r)
 
         # Building reverse index map for O(1) index lookup
-        self.id_idx_map = buildReverseIdxMap(seen=self.seen)
+        #print('Buidling reverse index map')
+        #self.id_idx_map = buildReverseIdxMap(seen=self.seen)
 
         # Logging frequency configuration
         self.log_increment = (self.N / 100) * config.compute['log_freq']
@@ -47,22 +50,22 @@ class Manager: #build r from fileIndex
         """
 
         # Startup
-        logging.info('Starting PaperRank computation for {0} IDs'
+        print('Starting PaperRank computation for {0} IDs'
                      .format(self.N))
 
         markov_matrix = MarkovTransitionMatrix(r_out=self.r,
                                                 r_in = self.r_in,
-                                               seen=self.seen,
-                                               id_idx_map=self.id_idx_map)
+                                               seen=self.seen)
         
         M = markov_matrix.construct()
 
-        # Initializing StablePaperRank object
+        # Initializing StablePaperRank objecti
+        print('Creating stablepaperrank object')
         compute_engine = StablePaperRank(M, self.N)
         # Computing PaperRanks
         paperrank = compute_engine.calculate()
 
-        logging.info('Computed PaperRanks for {0} IDs'.format(self.N))
+        print('Computed PaperRanks for {0} IDs'.format(self.N))
     
         #{test_keys[i]: test_values[i] for i in range(len(test_keys))} 
         # If no export, return

@@ -32,7 +32,7 @@ def logLoopProgress(count: int, last_check: int, N: int,
         if len(percent_complete) < 4:
             percent_complete = ' ' + percent_complete
 
-        logging.info('{0} iteration is {1}% complete'
+        print('{0} iteration is {1}% complete'
                      .format(name, percent_complete))
 
         return count  # Return this to update last_check to current count

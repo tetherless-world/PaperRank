@@ -22,7 +22,7 @@ def buildIdList(r: set, cutoff: int) -> np.array:
                  .format(seen_count))
     
     # Extracting IDs, casting to numpy array for easier handling
-    seen_raw = np.array(list(r), dtype=np.int)
+    seen_raw = np.array(list(r), dtype=np.float64)
 
     # Sorting (NOTE: This sorting heuristic is specific to PubMed IDs)
     # PubMedIDs are sequential. Reversing orders them from newest to oldest
@@ -69,7 +69,7 @@ def buildReverseIdxMap(seen: np.array) -> sparse.dok_matrix:
     matrix_dim = (max_id + 1, 1)  # max_id +1 is because IDs start at 1, not 0
 
     # Instatiating sparse.dok_matrix column vector
-    id_idx_map = sparse.dok_matrix((max_id + 1, 1), dtype=np.int)
+    id_idx_map = sparse.dok_matrix((max_id + 1, 1), dtype=np.float64)
 
     # counter
     last_check = 0
