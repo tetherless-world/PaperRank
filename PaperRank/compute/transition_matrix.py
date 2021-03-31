@@ -73,7 +73,7 @@ class MarkovTransitionMatrix:
             #print(self.r_in)
 
             # Getting inbound citations
-            inbound_list = eval(str(self.r_in[paper_id]))
+            inbound_list = self.r_in[paper_id]
 
             # Iterate throug inbound citations
             for inbound in inbound_list:
